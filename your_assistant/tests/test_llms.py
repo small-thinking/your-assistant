@@ -8,9 +8,6 @@ from your_assistant.core.utils import Config
 import your_assistant.core.llms as llms
 
 
-import inspect
-
-
 @pytest.fixture()
 def setup():
     test_folder_path = os.path.dirname(os.path.abspath(__file__))
@@ -20,9 +17,7 @@ def setup():
 
 
 class TestLLMs:
-
     def test_revchatgpt(self, setup):
-        """Test the RevChatGPT LLM.
-        """
+        """Test the RevChatGPT LLM."""
         llm = llms.RevChatGPT(test_mode=True)
         assert llm("This is a test prompt.") == "This is a test response."

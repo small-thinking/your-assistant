@@ -8,14 +8,11 @@ from typing import Optional, List
 
 
 class RevChatGPT(LLM):
-
     test_mode: bool = False
-
 
     @property
     def _llm_type(self) -> str:
         return "RevChatGPT"
-    
 
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
         """Call the LLM. In test mode, return a test response.
@@ -34,7 +31,7 @@ class RevChatGPT(LLM):
         if self.test_mode:
             response = "This is a test response."
             return response
-        
+
         chatgpt = Chatbot(
             config={
                 "session_token": os.getenv("CHATGPT_SESSION_TOKEN"),
