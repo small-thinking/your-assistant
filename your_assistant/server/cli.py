@@ -7,13 +7,6 @@ import argparse
 def get_parser():
     parser = argparse.ArgumentParser(description="Orchestrator")
     parser.add_argument(
-        "-p",
-        "--prompt",
-        type=str,
-        required=True,
-        help="The prompt to the agent.",
-    )
-    parser.add_argument(
         "-v",
         "--verbose",
         default=True,
@@ -42,9 +35,17 @@ def run():
         orchestrator = RevChatGPTOrchestrator(verbose=args.verbose)
     else:
         raise ValueError(f"Unknown orchestrator: {args.orchestrator}")
-    response = orchestrator.process(prompt=args.prompt)
-    return response
+
+    # Loop to wait for command line input
+    while True:
+        try:
+            user_input = input("\nEnter your conversation (exit with ctrl + C): ")
+            response = orchestrator.process(prompt=user_input)
+            print(response)
+        except KeyboardInterrupt:
+            # If the user presses Ctrl+C, the program will exit gracefully
+            exit(0)
 
 
 if __name__ == "__main__":
-    print(run())
+    run()
