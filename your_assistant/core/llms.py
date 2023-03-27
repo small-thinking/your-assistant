@@ -1,10 +1,11 @@
 """Core logic of custom LLMs.
 """
-from langchain.llms.base import LLM
-from langchain import PromptTemplate
 import os
+from typing import List, Optional
+
+from langchain import PromptTemplate
+from langchain.llms.base import LLM
 from revChatGPT.V1 import Chatbot
-from typing import Optional, List
 
 
 class RevChatGPT(LLM):
@@ -19,14 +20,11 @@ class RevChatGPT(LLM):
 
         Args:
             prompt (str): The prompt to the LLM.
-            stop (Optional[List[str]]): The stop tokens.
+            stop (Optional[List[str]]): The stop tokens. Will be ignored.
 
         Returns:
             str: The response from the LLM.
         """
-        if stop is not None:
-            raise ValueError("The stop tokens are not supported by RevChatGPT.")
-
         response = ""
         if self.test_mode:
             response = "This is a test response."
@@ -38,5 +36,5 @@ class RevChatGPT(LLM):
             }
         )
         for data in chatgpt.ask(prompt):
-            response += data["text"]
+            response = data["message"]
         return response
