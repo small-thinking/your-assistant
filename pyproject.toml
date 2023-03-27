@@ -15,6 +15,9 @@ revchatgpt = "^4.0.9"
 pytest = "^7.2.2"
 python-dotenv = "^1.0.0"
 flask = "^2.2.3"
+discord = "^2.2.2"
+discord-py = "^2.2.2"
+certifi = "^2022.12.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.2"
