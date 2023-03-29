@@ -16,10 +16,16 @@ def setup():
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(test_folder_path)))
     config = load_env(env_file_path=os.path.join(root_path, ".env.template"))
     assert "abc" == os.getenv("CHATGPT_SESSION_TOKEN")
+    assert "bard_session_id" == os.getenv("BARD_SESSION_ID")
 
 
 class TestLLMs:
     def test_revchatgpt(self, setup):
         """Test the RevChatGPT LLM."""
         llm = llms.RevChatGPT(test_mode=True)
+        assert llm("This is a test prompt.") == "This is a test response."
+
+    def test_revbard(self, setup):
+        """Test the RevBard LLM."""
+        llm = llms.RevBard(test_mode=False)
         assert llm("This is a test prompt.") == "This is a test response."
