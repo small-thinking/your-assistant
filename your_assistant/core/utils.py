@@ -16,6 +16,7 @@ def load_env(env_file_path: str = None):
 class Logger:
     def __init__(self, logger_name: str, level: Any = logging.INFO):
         self.logger = logging.getLogger(logger_name)
+        self.logger.setLevel(level=level)
         self.formatter = logging.Formatter(
             "%(asctime)s %(levelname)s %(name)s %(message)s (%(filename)s:%(lineno)d)"
         )
