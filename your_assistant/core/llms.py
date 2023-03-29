@@ -63,6 +63,6 @@ class RevBard(LLM):
             response = "This is a test response."
             return response
 
-        bard = BardChat(session_id=os.getenv("BARD_SESSION_ID"))
+        bard = BardChat(session_id=os.getenv("BARD_SESSION_TOKEN"))
         response = bard.ask(message=prompt)
         return response["content"]
