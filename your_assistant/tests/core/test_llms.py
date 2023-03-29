@@ -16,7 +16,7 @@ def setup():
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(test_folder_path)))
     config = load_env(env_file_path=os.path.join(root_path, ".env.template"))
     assert "abc" == os.getenv("CHATGPT_SESSION_TOKEN")
-    assert "bard_session_id" == os.getenv("BARD_SESSION_ID")
+    assert "bard" == os.getenv("BARD_SESSION_TOKEN")
 
 
 class TestLLMs:
@@ -27,5 +27,5 @@ class TestLLMs:
 
     def test_revbard(self, setup):
         """Test the RevBard LLM."""
-        llm = llms.RevBard(test_mode=False)
+        llm = llms.RevBard(test_mode=True)
         assert llm("This is a test prompt.") == "This is a test response."
