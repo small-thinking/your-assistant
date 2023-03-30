@@ -33,3 +33,10 @@ class Logger:
         caller_line = caller_frame[2]
 
         self.logger.info(f"({caller_name} L{caller_line}): {message}")
+
+    def error(self, message):
+        caller_frame = inspect.stack()[1]
+        caller_name = caller_frame[3]
+        caller_line = caller_frame[2]
+
+        self.logger.error(f"({caller_name} L{caller_line}): {message}")

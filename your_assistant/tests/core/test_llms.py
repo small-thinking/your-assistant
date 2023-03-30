@@ -15,7 +15,7 @@ def setup():
     test_folder_path = os.path.dirname(os.path.abspath(__file__))
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(test_folder_path)))
     config = load_env(env_file_path=os.path.join(root_path, ".env.template"))
-    assert "abc" == os.getenv("CHATGPT_SESSION_TOKEN")
+    assert "accessToken" == os.getenv("CHATGPT_ACCESS_TOKEN")
     assert "bard" == os.getenv("BARD_SESSION_TOKEN")
 
 
