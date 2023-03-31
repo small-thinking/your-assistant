@@ -23,6 +23,10 @@ def handle_request():
         response = orchestrator.process(prompt=prompt)
         return {"response": response}
 
+@app.route("/health", methods=["GET"])
+def handle_health_request():
+    if request.method == "GET":
+        return {"response": "health success"}
 
 if __name__ == "__main__":
     init_service()
