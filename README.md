@@ -6,7 +6,12 @@ to access it from the Discord server, the HTTP service, or locally via command l
 
 ## How to build the Discord service.
 
-`docker build -t your-assistant-discord-bot -f Dockerfile.discord . ; docker run -it your-assistant-discord-bot`
+```
+docker build -t your-assistant-discord-bot -f Dockerfile.discord . ; docker run -it your-assistant-discord-bot
+```
 
 
+## Clean up docker images
+```
 docker rm $(docker ps -a -q) ; docker images | grep '<none>' | awk '{print $3}' | xargs docker rmi
+```
