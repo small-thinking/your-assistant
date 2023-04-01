@@ -2,25 +2,36 @@
 """
 from flask import Flask, request
 
-from your_assistant.core.orchestrator import RevChatGPTOrchestrator
+from your_assistant.core.orchestrator import *
 from your_assistant.core.utils import load_env
 
 app = Flask("Your Assistant")
-orchestrator = None
-
+chatgpt_orchestrator = None
+bard_orchestrator = None
 
 def init_service():
-    global orchestrator
+    global chatgpt_orchestrator
+    global bard_orchestrator
+
     load_env()
 
-    orchestrator = RevChatGPTOrchestrator()
+    chatgpt_orchestrator = RevChatGPTOrchestrator()
+    bard_orchestrator = RevBardOrchestrator()
 
 
-@app.route("/api/v1/assistant", methods=["POST"])
+@app.route("/api/v1/chatgpt", methods=["POST"])
 def handle_request():
     if request.method == "POST":
         prompt = request.json["prompt"]
-        response = orchestrator.process(prompt=prompt)
+        response = chatgpt_orchestrator.process(prompt=prompt)
+        return {"response": response}
+
+# TODO(fuj): consider de-dup with chatgpt endpoint later.
+@app.route("/api/v1/bard", methods=["POST"])
+def handle_bard_request():
+    if request.method == "POST":
+        prompt = request.json["prompt"]
+        response = bard_orchestrator.process(prompt=prompt)
         return {"response": response}
 
 @app.route("/health", methods=["GET"])
