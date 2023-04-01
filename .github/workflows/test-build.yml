@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        run: |
-          echo "The current working directory is $PWD"
 
       - name: Set up Python
         uses: actions/setup-python@v2
