@@ -3193,7 +3193,7 @@ testing = ["coverage (>=6.2)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "mypy 
 name = "pytest-mock"
 version = "3.10.0"
 description = "Thin-wrapper around the mock package for easier use with pytest"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -4600,4 +4600,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "fd3698ecbf14e03d708f7e4a2de59ec421566976732276cfd9725ccaa2440fae"
+content-hash = "8e88fdd0243e04236d0035fc7bc05fa6c347525164788bfa9c106ac4a2346e36"

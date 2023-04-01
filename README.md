@@ -8,9 +8,16 @@ to access it from the Discord server, the HTTP service, or locally via command l
 # Development Guide
 
 ## Project management
-1. We use poetry to manage the project. Please install poetry and then use `poetry install` to install the package locally.
-2. Please use `poetry add <package>` to add dependencies, or use `poetry add --group dev <package>` to add development dependencies, e.g. pytest, flake8, etc.
-3. Please use black in your IDE to format your code. If you use VSCode, you can create a folder `.vscode` and create a file `settings.json`. In the file, set "format at save".
+We use the following tools to east the project development:
+1. poetry: package management.
+2. mypy: static type check.
+3. flake8 and black: coding style unification and formatting.
+4. isort: import order management.
+
+Please run `dev-setup.sh` to setup the environment.
+
+When you need to add new package, please use `poetry add <package>` to add dependencies, or use `poetry add --group dev <package>` to add development dependencies, e.g. pytest, flake8, etc.
+For auto-formatting, please use black in your IDE to format your code. If you use VSCode, you can create a folder `.vscode` and create a file `settings.json`. In the file, set "format at save".
 ```
 {
     "editor.formatOnSave": true,
@@ -23,11 +30,9 @@ to access it from the Discord server, the HTTP service, or locally via command l
 ```
 
 ## Pre-commit
-Install pre-commit:
-```
-poetry add --group dev pre-commit
-```
-and then initialize pre-commit.
+We have a number of pre-commit checks, including coding style, type check, and import order,
+
+Initialize pre-commit.
 ```
 pre-commit install
 ```
