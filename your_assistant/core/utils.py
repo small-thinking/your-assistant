@@ -10,7 +10,9 @@ import nltk
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
 from langchain.document_loaders import OnlinePDFLoader, PyPDFLoader
+from langchain.embeddings import FakeEmbeddings, OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import FAISS
 
 
 def load_env(env_file_path: str = None):
@@ -51,13 +53,28 @@ class Logger:
 class PDFIndexer:
     """Index a PDF file."""
 
-    def __init__(self):
+    def __init__(self, db_name: str, test_mode: bool = False):
         nltk.download("averaged_perceptron_tagger")
         self.logger = Logger("PDFIndexer")
+        self.db_name = db_name
+        if test_mode:
+            self.embeddings = FakeEmbeddings()
+        else:
+            self.embeddings = OpenAIEmbeddings()
 
     def index(self, file_path: str):
+        """Index a given PDF file into the vector DB according to the name.
+
+        Args:
+            file_path (str): The path to the file. Can be a url.
+        """
         loader = self._init_loader(file_path)
         documents = self._extract_data(loader)
+        db = FAISS.from_documents(documents, self.embeddings)
+        self.logger.info(f"Indexing done. {len(documents)} documents indexed.")
+        db.save_local(self.db_name)
+        self.logger.info(f"DB saved to {self.db_name}.")
+        return documents
 
     def _init_loader(self, file_path: str) -> Any:
         """Index a PDF file.
@@ -103,13 +120,24 @@ class PDFIndexer:
         pass
 
 
-# # file_path = "https://arxiv.org/pdf/2103.00020.pdf"
+# file_path = "https://openreview.net/pdf?id=fSfcEYQP_qc"
+# db_name = "test.db"
 # # file_path = "/Users/yjiang/Downloads/foundation-model.pdf"
-# file_path = "/Users/yjiang/Downloads/test-pdf.pdf"
-# indexer = PDFIndexer()
+# # file_path = "/Users/yjiang/Downloads/test-pdf.pdf"
+# indexer = PDFIndexer(db_name=db_name, test_mode=False)
 # data = indexer.index(file_path)
 # print(len(data))
 
 # print(max([len(d.page_content) for d in data]))
-# print(data)
 # print(data[0])
+
+
+embeddings = OpenAIEmbeddings()
+loaded_db = FAISS.load_local("test.db", embeddings)
+retriever = loaded_db.as_retriever()
+docs = retriever.get_relevant_documents("What is this paper talking about?")
+print(len(docs))
+for idx, doc in enumerate(docs):
+    print(idx)
+    print(f"\t{doc.page_content[:100]}")
+    print("")
