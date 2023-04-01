@@ -14,18 +14,46 @@ from your_assistant.core.utils import load_env
 def setup():
     test_folder_path = os.path.dirname(os.path.abspath(__file__))
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(test_folder_path)))
-    config = load_env(env_file_path=os.path.join(root_path, ".env.template"))
-    assert "accessToken" == os.getenv("CHATGPT_ACCESS_TOKEN")
-    assert "bard" == os.getenv("BARD_SESSION_TOKEN")
+    return root_path
 
 
 class TestLLMs:
-    def test_revchatgpt(self, setup):
+    @pytest.mark.parametrize(
+        "config_file, test_mode, expected",
+        [
+            (".env.template", True, "This is a test response."),
+            (
+                ".env.not-exist",
+                False,
+                "Please set CHATGPT_ACCESS_TOKEN before chatting with ChatGPT.",
+            ),
+        ],
+    )
+    def test_revchatgpt(self, setup, config_file, test_mode, expected):
         """Test the RevChatGPT LLM."""
-        llm = llms.RevChatGPT(test_mode=True)
-        assert llm("This is a test prompt.") == "This is a test response."
+        root_path = setup
+        for key in os.environ:
+            del os.environ[key]
+        load_env(env_file_path=os.path.join(root_path, config_file))
+        llm = llms.RevChatGPT(test_mode=test_mode)
+        assert llm("This is a test prompt.") == expected
 
-    def test_revbard(self, setup):
+    @pytest.mark.parametrize(
+        "config_file, test_mode, expected",
+        [
+            (".env.template", True, "This is a test response."),
+            (
+                ".env.not-exist",
+                False,
+                "Please set BARD_SESSION_TOKEN before chatting with Bard.",
+            ),
+        ],
+    )
+    def test_revbard(self, setup, config_file, test_mode, expected):
         """Test the RevBard LLM."""
-        llm = llms.RevBard(test_mode=True)
-        assert llm("This is a test prompt.") == "This is a test response."
+        root_path = setup
+        for key in os.environ:
+            del os.environ[key]
+        load_env(env_file_path=os.path.join(root_path, config_file))
+        llm = llms.RevBard(test_mode=test_mode)
+        assert llm("This is a test prompt.") == expected
