@@ -33,6 +33,7 @@ class RevChatGPT(LLM):
 
         chatgpt = Chatbot(
             config={
+                "session_token": os.getenv("CHATGPT_SESSION_TOKEN"),
                 "access_token": os.getenv("CHATGPT_ACCESS_TOKEN"),
             }
         )
