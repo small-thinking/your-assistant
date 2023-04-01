@@ -20,7 +20,7 @@ def init_service():
 
 
 @app.route("/api/v1/chat", methods=["POST"])
-def handle_request():
+def handle_chatgpt_request():
     if request.method == "POST":
         prompt = request.json["prompt"]
         response = chatgpt_orchestrator.process(prompt=prompt)
