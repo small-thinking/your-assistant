@@ -3,11 +3,12 @@
 import inspect
 import logging
 import os
-from typing import Any
+from typing import Any, List
 from urllib.parse import urlparse
 
 import nltk
 from dotenv import load_dotenv
+from langchain.docstore.document import Document
 from langchain.document_loaders import OnlinePDFLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
@@ -55,7 +56,8 @@ class PDFIndexer:
         self.logger = Logger("PDFIndexer")
 
     def index(self, file_path: str):
-        pass
+        loader = self._init_loader(file_path)
+        documents = self._extract_data(loader)
 
     def _init_loader(self, file_path: str) -> Any:
         """Index a PDF file.
@@ -85,12 +87,20 @@ class PDFIndexer:
         """
         # OpenAI embeddings are limited to 8191 tokens.
         # See: https://platform.openai.com/docs/guides/embeddings/what-are-embeddings.
-        data = loader.load_and_split(
+        documents = loader.load_and_split(
             text_splitter=RecursiveCharacterTextSplitter(
                 chunk_size=6000, chunk_overlap=500
             )
         )
-        return data
+        return documents
+
+    def _get_embeddings(self, documents: List[Document]):
+        """Index a PDF file.
+
+        Args:
+            documents (Any): The documents to index.
+        """
+        pass
 
 
 # # file_path = "https://arxiv.org/pdf/2103.00020.pdf"
