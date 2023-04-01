@@ -31,10 +31,14 @@ class RevChatGPT(LLM):
             response = "This is a test response."
             return response
 
+        # Check token availability.
+        access_token = os.getenv("CHATGPT_ACCESS_TOKEN")
+        if not access_token:
+            return "Please set CHATGPT_ACCESS_TOKEN before chatting with ChatGPT."
+
         chatgpt = Chatbot(
             config={
-                "session_token": os.getenv("CHATGPT_SESSION_TOKEN"),
-                "access_token": os.getenv("CHATGPT_ACCESS_TOKEN"),
+                "access_token": access_token,
             }
         )
         for data in chatgpt.ask(prompt):
@@ -63,6 +67,11 @@ class RevBard(LLM):
         if self.test_mode:
             response = "This is a test response."
             return response
+
+        # Check token availability.
+        access_token = os.getenv("BARD_SESSION_TOKEN")
+        if not access_token:
+            return "Please set BARD_SESSION_TOKEN before chatting with Bard."
 
         bard = BardChat(session_id=os.getenv("BARD_SESSION_TOKEN"))
         response = bard.ask(message=prompt)
