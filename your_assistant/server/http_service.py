@@ -9,6 +9,7 @@ app = Flask("Your Assistant")
 chatgpt_orchestrator = None
 bard_orchestrator = None
 
+
 def init_service():
     global chatgpt_orchestrator
     global bard_orchestrator
@@ -26,6 +27,7 @@ def handle_chatgpt_request():
         response = chatgpt_orchestrator.process(prompt=prompt)
         return {"response": response}
 
+
 # TODO(fuj): consider de-dup with chatgpt endpoint later.
 @app.route("/api/v1/bard", methods=["POST"])
 def handle_bard_request():
@@ -34,10 +36,12 @@ def handle_bard_request():
         response = bard_orchestrator.process(prompt=prompt)
         return {"response": response}
 
+
 @app.route("/health", methods=["GET"])
 def handle_health_request():
     if request.method == "GET":
         return {"response": "health success"}
+
 
 if __name__ == "__main__":
     init_service()

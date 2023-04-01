@@ -3,7 +3,7 @@
 import inspect
 import logging
 import os
-from typing import Any, List
+from typing import Any, List, Union
 from urllib.parse import urlparse
 
 import nltk
@@ -13,7 +13,7 @@ from langchain.document_loaders import OnlinePDFLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
-def load_env(env_file_path: str = None):
+def load_env(env_file_path: str = ""):
     load_dotenv(env_file_path)
 
 
@@ -59,12 +59,13 @@ class PDFIndexer:
         loader = self._init_loader(file_path)
         documents = self._extract_data(loader)
 
-    def _init_loader(self, file_path: str) -> Any:
+    def _init_loader(self, file_path: str) -> Union[PyPDFLoader, OnlinePDFLoader]:
         """Index a PDF file.
 
         Args:
             file_path (str): The path to the file. Can be a url.
         """
+        loader: Union[PyPDFLoader, OnlinePDFLoader]
         try:
             result = urlparse(file_path)
             if all([result.scheme, result.netloc]):
