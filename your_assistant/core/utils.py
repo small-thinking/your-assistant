@@ -54,6 +54,9 @@ class PDFIndexer:
         nltk.download("averaged_perceptron_tagger")
         self.logger = Logger("PDFIndexer")
 
+    def index(self, file_path: str):
+        pass
+
     def _init_loader(self, file_path: str) -> Any:
         """Index a PDF file.
 
@@ -74,13 +77,12 @@ class PDFIndexer:
             raise ValueError(f"Error happens when initialize the pdf loader.")
         return loader
 
-    def _extract_data(self, file_path: str):
+    def _extract_data(self, loader: Any):
         """Index a PDF file.
 
         Args:
-            file_path (str): The path to the file. Can be a url.
+            loader (Any): The loader to load the file.
         """
-        loader = self._init_loader(file_path)
         # OpenAI embeddings are limited to 8191 tokens.
         # See: https://platform.openai.com/docs/guides/embeddings/what-are-embeddings.
         data = loader.load_and_split(
