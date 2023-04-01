@@ -35,7 +35,6 @@ def run():
         orchestrator = RevChatGPTOrchestrator(verbose=args.verbose)
     else:
         raise ValueError(f"Unknown orchestrator: {args.orchestrator}")
-
     # Loop to wait for command line input
     while True:
         try:
