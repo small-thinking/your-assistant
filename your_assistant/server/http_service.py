@@ -19,7 +19,7 @@ def init_service():
     bard_orchestrator = RevBardOrchestrator()
 
 
-@app.route("/api/v1/chatgpt", methods=["POST"])
+@app.route("/api/v1/chat", methods=["POST"])
 def handle_request():
     if request.method == "POST":
         prompt = request.json["prompt"]
