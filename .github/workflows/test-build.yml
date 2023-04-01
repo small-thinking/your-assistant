@@ -11,10 +11,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    working-directory: ./your_assistant
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        run: |
+          echo "The current working directory is $PWD"
 
       - name: Set up Python
         uses: actions/setup-python@v2
