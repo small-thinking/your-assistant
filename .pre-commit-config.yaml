@@ -5,6 +5,15 @@ repos:
   - id: trailing-whitespace
   - id: end-of-file-fixer
 
+- repo: local
+  hooks:
+  - id: pytest
+    name: Run unit tests
+    entry: pytest
+    args: [your_assistant/tests]
+    language: system
+    pass_filenames: false
+
 - repo: https://github.com/psf/black
   rev: 23.3.0
   hooks:
