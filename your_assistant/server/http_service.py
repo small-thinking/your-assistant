@@ -1,11 +1,14 @@
 """Http service for your assistant.
 """
 from flask import Flask, request
+from flask_cors import CORS, cross_origin
 
 from your_assistant.core.orchestrator import *
 from your_assistant.core.utils import load_env
 
 app = Flask("Your Assistant")
+cors = CORS(app)
+
 chatgpt_orchestrator = None
 bard_orchestrator = None
 
