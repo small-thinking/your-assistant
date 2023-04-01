@@ -1,6 +1,6 @@
+# type: ignore
 """Create the discord service.
 """
-import asyncio
 import os
 
 import discord
@@ -42,21 +42,21 @@ bot = DiscordBot()
 
 @bot.tree.command(name="chat")
 @app_commands.describe(prompt="prompt")
-async def chat(interaction: discord.Interaction, prompt: str):
+async def chat(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the ChatGPT bot."""
     await speak_to_bot(interaction, prompt, bot.chat_orchestrator)
 
 
 @bot.tree.command(name="bard")
 @app_commands.describe(prompt="prompt")
-async def bard(interaction: discord.Interaction, prompt: str):
+async def bard(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the Bard bot."""
     await speak_to_bot(interaction, prompt, bot.bard_orchestrator)
 
 
 async def speak_to_bot(
     interaction: discord.Interaction, prompt: str, orchestrator: Orchestrator
-):
+) -> None:
     """Speak to the bot."""
     try:
         await interaction.channel.typing()

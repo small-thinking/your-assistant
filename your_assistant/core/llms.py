@@ -75,4 +75,4 @@ class RevBard(LLM):
 
         bard = BardChat(session_id=os.getenv("BARD_SESSION_TOKEN"))
         response = bard.ask(message=prompt)
-        return response["content"]
+        return response["content"]  # type: ignore
