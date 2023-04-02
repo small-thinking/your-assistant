@@ -19,7 +19,7 @@ def setup():
 
 class TestIndexer:
     @pytest.mark.parametrize(
-        "config_file, file_path, expected",
+        "config_file, path, expected",
         [
             (
                 ".env.template",
@@ -29,7 +29,7 @@ class TestIndexer:
             (".env.template", "testdata/test-pdf.pdf", UnstructuredFileLoader),
         ],
     )
-    def test_pdf_indexer_init_loader(self, setup, config_file, file_path, expected):
+    def test_pdf_indexer_init_loader(self, setup, config_file, path, expected):
         root_path = setup
         for key in os.environ:
             del os.environ[key]
@@ -37,15 +37,15 @@ class TestIndexer:
         knowledge_indexer = indexer.KnowledgeIndexer()
         if isinstance(expected, ValueError):
             with pytest.raises(ValueError) as e:
-                knowledge_indexer._init_loader(file_path=file_path)
+                knowledge_indexer._init_loader(path=path)
             assert str(e.value) == expected.args[0]
         else:
-            file_path = os.path.join(os.path.dirname(__file__), file_path)
-            loader = knowledge_indexer._init_loader(file_path=file_path)
+            path = os.path.join(os.path.dirname(__file__), path)
+            loader = knowledge_indexer._init_loader(path=path)
             assert type(loader) == expected
 
     @pytest.mark.parametrize(
-        "config_file, file_path, chunk_size, chunk_overlap, expected",
+        "config_file, path, chunk_size, chunk_overlap, expected",
         [
             (
                 ".env.template",
@@ -64,15 +64,15 @@ class TestIndexer:
         ],
     )
     def test_pdf_indexer_extract_data(
-        self, setup, config_file, file_path, chunk_size, chunk_overlap, expected
+        self, setup, config_file, path, chunk_size, chunk_overlap, expected
     ):
         root_path = setup
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
         knowledge_indexer = indexer.KnowledgeIndexer()
-        file_path = os.path.join(os.path.dirname(__file__), file_path)
-        loader = knowledge_indexer._init_loader(file_path=file_path)
+        path = os.path.join(os.path.dirname(__file__), path)
+        loader = knowledge_indexer._init_loader(path=path)
         if isinstance(expected, ValueError):
             with pytest.raises(ValueError) as e:
                 knowledge_indexer._extract_data(
