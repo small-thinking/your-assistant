@@ -1,12 +1,12 @@
 """Test the utils.
-Run this test with command: pytest your_assistant/tests/core/test_tools.py
+Run this test with command: pytest your_assistant/tests/core/test_indexer.py
 """
 import os
 
 import pytest
-from langchain.document_loaders import PyPDFLoader
+from langchain.document_loaders import UnstructuredFileLoader
 
-import your_assistant.core.tools as tools
+import your_assistant.core.indexer as indexer
 from your_assistant.core.utils import load_env
 
 
@@ -17,35 +17,40 @@ def setup():
     return root_path
 
 
-class TestTools:
+class TestIndexer:
     @pytest.mark.parametrize(
-        "config_file, file_path, expected",
+        "config_file, path, expected",
         [
             (
                 ".env.template",
                 "testdata/void.pdf",
-                ValueError("Error happens when initialize the pdf loader."),
+                ValueError("Error happens when initialize the data loader."),
             ),
-            (".env.template", "testdata/test-pdf.pdf", PyPDFLoader),
+            (
+                ".env.template",
+                "testdata/test-pdf.pdf",
+                UnstructuredFileLoader,
+            ),
         ],
     )
-    def test_pdf_indexer_init_loader(self, setup, config_file, file_path, expected):
+    def test_pdf_indexer_init_loader(self, setup, config_file, path, expected):
         root_path = setup
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
-        indexer = tools.PDFIndexer()
+        knowledge_indexer = indexer.KnowledgeIndexer()
         if isinstance(expected, ValueError):
             with pytest.raises(ValueError) as e:
-                indexer._init_loader(file_path=file_path)
+                knowledge_indexer._init_loader(path=path)
             assert str(e.value) == expected.args[0]
         else:
-            file_path = os.path.join(os.path.dirname(__file__), file_path)
-            loader = indexer._init_loader(file_path=file_path)
+            path = os.path.join(os.path.dirname(__file__), path)
+            loader, source, _ = knowledge_indexer._init_loader(path=path)
             assert type(loader) == expected
+            assert source == path
 
     @pytest.mark.parametrize(
-        "config_file, file_path, chunk_size, chunk_overlap, expected",
+        "config_file, path, chunk_size, chunk_overlap, expected",
         [
             (
                 ".env.template",
@@ -64,24 +69,25 @@ class TestTools:
         ],
     )
     def test_pdf_indexer_extract_data(
-        self, setup, config_file, file_path, chunk_size, chunk_overlap, expected
+        self, setup, config_file, path, chunk_size, chunk_overlap, expected
     ):
         root_path = setup
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
-        indexer = tools.PDFIndexer()
-        file_path = os.path.join(os.path.dirname(__file__), file_path)
-        loader = indexer._init_loader(file_path=file_path)
+        knowledge_indexer = indexer.KnowledgeIndexer()
+        path = os.path.join(os.path.dirname(__file__), path)
+        loader, source, _ = knowledge_indexer._init_loader(path=path)
         if isinstance(expected, ValueError):
             with pytest.raises(ValueError) as e:
-                indexer._extract_data(
+                knowledge_indexer._extract_data(
                     loader=loader, chunk_size=chunk_size, chunk_overlap=chunk_overlap
                 )
             assert str(e.value) == expected.args[0]
         else:
-            data = indexer._extract_data(
+            data = knowledge_indexer._extract_data(
                 loader=loader, chunk_size=chunk_size, chunk_overlap=chunk_overlap
             )
             assert len(data) == 1
             assert data[0].page_content == expected
+            assert source == path
