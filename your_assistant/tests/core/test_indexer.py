@@ -1,12 +1,12 @@
 """Test the utils.
-Run this test with command: pytest your_assistant/tests/core/test_tools.py
+Run this test with command: pytest your_assistant/tests/core/test_indexer.py
 """
 import os
 
 import pytest
-from langchain.document_loaders import PyPDFLoader
+from langchain.document_loaders import UnstructuredFileLoader
 
-import your_assistant.core.tools as tools
+import your_assistant.core.indexer as indexer
 from your_assistant.core.utils import load_env
 
 
@@ -26,7 +26,7 @@ class TestTools:
                 "testdata/void.pdf",
                 ValueError("Error happens when initialize the pdf loader."),
             ),
-            (".env.template", "testdata/test-pdf.pdf", PyPDFLoader),
+            (".env.template", "testdata/test-pdf.pdf", UnstructuredFileLoader),
         ],
     )
     def test_pdf_indexer_init_loader(self, setup, config_file, file_path, expected):
@@ -34,14 +34,14 @@ class TestTools:
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
-        indexer = tools.PDFIndexer()
+        knowledge_indexer = indexer.KnowledgeIndexer()
         if isinstance(expected, ValueError):
             with pytest.raises(ValueError) as e:
-                indexer._init_loader(file_path=file_path)
+                knowledge_indexer._init_loader(file_path=file_path)
             assert str(e.value) == expected.args[0]
         else:
             file_path = os.path.join(os.path.dirname(__file__), file_path)
-            loader = indexer._init_loader(file_path=file_path)
+            loader = knowledge_indexer._init_loader(file_path=file_path)
             assert type(loader) == expected
 
     @pytest.mark.parametrize(
@@ -70,17 +70,17 @@ class TestTools:
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
-        indexer = tools.PDFIndexer()
+        knowledge_indexer = indexer.KnowledgeIndexer()
         file_path = os.path.join(os.path.dirname(__file__), file_path)
-        loader = indexer._init_loader(file_path=file_path)
+        loader = knowledge_indexer._init_loader(file_path=file_path)
         if isinstance(expected, ValueError):
             with pytest.raises(ValueError) as e:
-                indexer._extract_data(
+                knowledge_indexer._extract_data(
                     loader=loader, chunk_size=chunk_size, chunk_overlap=chunk_overlap
                 )
             assert str(e.value) == expected.args[0]
         else:
-            data = indexer._extract_data(
+            data = knowledge_indexer._extract_data(
                 loader=loader, chunk_size=chunk_size, chunk_overlap=chunk_overlap
             )
             assert len(data) == 1

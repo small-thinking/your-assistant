@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import nltk
 from langchain import PromptTemplate
 from langchain.docstore.document import Document
-from langchain.document_loaders import OnlinePDFLoader, PyPDFLoader
+from langchain.document_loaders import OnlinePDFLoader, UnstructuredFileLoader
 from langchain.embeddings import FakeEmbeddings, OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
@@ -17,7 +17,7 @@ import your_assistant.core.llms as llms
 import your_assistant.core.utils as utils
 
 
-class PDFIndexer:
+class KnowledgeIndexer:
     """Index a PDF file into a vector DB."""
 
     def __init__(self, db_name: str = "faiss.db"):
@@ -39,13 +39,15 @@ class PDFIndexer:
         self._index_embeddings(documents=documents)
         return documents
 
-    def _init_loader(self, file_path: str) -> Union[PyPDFLoader, OnlinePDFLoader]:
+    def _init_loader(
+        self, file_path: str
+    ) -> Union[UnstructuredFileLoader, OnlinePDFLoader]:
         """Index a PDF file.
 
         Args:
             file_path (str): The path to the file. Can be a url.
         """
-        loader: Union[PyPDFLoader, OnlinePDFLoader]
+        loader: Union[UnstructuredFileLoader, OnlinePDFLoader]
         try:
             result = urlparse(file_path)
             if all([result.scheme, result.netloc]):
@@ -53,7 +55,7 @@ class PDFIndexer:
                 loader = OnlinePDFLoader(file_path)
             elif os.path.exists(file_path):
                 self.logger.info("Load local pdf loader.")
-                loader = PyPDFLoader(file_path)
+                loader = UnstructuredFileLoader(file_path)
             else:
                 raise ValueError(f"File not found: {file_path}")
         except ValueError:

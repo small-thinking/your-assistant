@@ -3,8 +3,8 @@
 import os
 from abc import ABC, abstractmethod
 
-from your_assistant.core.llms import *
-from your_assistant.core.tools import DocumentQA
+from your_assistant.core.indexer import DocumentQA, KnowledgeIndexer
+from your_assistant.core.llms import RevBard, RevChatGPT
 from your_assistant.core.utils import load_env
 
 
@@ -65,6 +65,13 @@ class RevBardOrchestrator(Orchestrator):
         return response
 
 
+class KnowledgeIndexOrchestrator(Orchestrator):
+    def __init__(self, db_name: str = "faiss.db", verbose: bool = False):
+        """Initialize the orchestrator."""
+        super().__init__(verbose=verbose)
+        self.indexer = KnowledgeIndexer(db_name=db_name)
+
+
 class QAOrchestrator(Orchestrator):
     """The orchestrator that uses the QA agent."""
 
@@ -89,3 +96,8 @@ class QAOrchestrator(Orchestrator):
             return ""
         response = self.qa.answer(prompt)
         return response
+
+
+qa = QAOrchestrator()
+res = qa.process("What is the definition of OKR?")
+print(res)
