@@ -24,9 +24,13 @@ class TestIndexer:
             (
                 ".env.template",
                 "testdata/void.pdf",
-                ValueError("Error happens when initialize the pdf loader."),
+                ValueError("Error happens when initialize the data loader."),
             ),
-            (".env.template", "testdata/test-pdf.pdf", UnstructuredFileLoader),
+            (
+                ".env.template",
+                "testdata/test-pdf.pdf",
+                UnstructuredFileLoader,
+            ),
         ],
     )
     def test_pdf_indexer_init_loader(self, setup, config_file, path, expected):
@@ -41,8 +45,9 @@ class TestIndexer:
             assert str(e.value) == expected.args[0]
         else:
             path = os.path.join(os.path.dirname(__file__), path)
-            loader = knowledge_indexer._init_loader(path=path)
+            loader, source, _ = knowledge_indexer._init_loader(path=path)
             assert type(loader) == expected
+            assert source == path
 
     @pytest.mark.parametrize(
         "config_file, path, chunk_size, chunk_overlap, expected",
@@ -72,7 +77,7 @@ class TestIndexer:
         load_env(env_file_path=os.path.join(root_path, config_file))
         knowledge_indexer = indexer.KnowledgeIndexer()
         path = os.path.join(os.path.dirname(__file__), path)
-        loader = knowledge_indexer._init_loader(path=path)
+        loader, source, _ = knowledge_indexer._init_loader(path=path)
         if isinstance(expected, ValueError):
             with pytest.raises(ValueError) as e:
                 knowledge_indexer._extract_data(
@@ -85,3 +90,4 @@ class TestIndexer:
             )
             assert len(data) == 1
             assert data[0].page_content == expected
+            assert source == path

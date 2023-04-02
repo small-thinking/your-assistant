@@ -2,7 +2,11 @@
 """
 import inspect
 import logging
-from typing import Any
+import os
+import ssl
+import urllib.parse
+from typing import Any, Tuple
+from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
 
@@ -34,12 +38,49 @@ class Logger:
         caller_frame = inspect.stack()[1]
         caller_name = caller_frame[3]
         caller_line = caller_frame[2]
-
         self.logger.info(f"({caller_name} L{caller_line}): {message}")
 
     def error(self, message):
         caller_frame = inspect.stack()[1]
         caller_name = caller_frame[3]
         caller_line = caller_frame[2]
-
         self.logger.error(f"({caller_name} L{caller_line}): {message}")
+
+    def warning(self, message):
+        caller_frame = inspect.stack()[1]
+        caller_name = caller_frame[3]
+        caller_line = caller_frame[2]
+        self.logger.warning(f"({caller_name} L{caller_line}): {message}")
+
+
+def file_downloader(url: str, retry_with_no_verify: bool = True) -> Tuple[str, str]:
+    """Download a file from a given url.
+
+    Args:
+        url (str): The url to download the file from.
+        retry_with_no_verify (bool, optional): Whether to retry the download with
+
+    Returns:
+        Tuple[str, str]: The url and the path to the downloaded file.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+    }
+    logger = Logger("file_downloader")
+    filepath = os.path.basename(urllib.parse.urlparse(url).path)
+    req = Request(url, headers=headers)
+    try:
+        response = urlopen(req)
+    except urllib.error.URLError:
+        if not retry_with_no_verify:
+            raise
+        logger.warning("SSL certificate verification error. Ignore it.")
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        response = urlopen(req, context=context)
+
+    with open(filepath, "wb") as outfile:
+        outfile.write(response.read())
+
+    return url, filepath

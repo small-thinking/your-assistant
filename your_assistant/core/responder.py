@@ -1,6 +1,7 @@
 """Core logic of the responders.
 """
 
+import os
 from typing import Any, List, Union
 
 from langchain import PromptTemplate
@@ -23,7 +24,7 @@ class DocumentQA:
         verbose: bool = False,
     ):
         self.logger = utils.Logger("DocumentQA")
-        self.db_name = db_name
+        self.db_index_name = os.path.join(db_name, "index")
         self.llm: Any = None
         # Init the LLM.
         if llm_type == "RevBard":
@@ -52,10 +53,12 @@ class DocumentQA:
         Args:
             question (str): The question to answer.
         """
-        loaded_db = FAISS.load_local(self.db_name, self.embeddings_tool)
+        loaded_db = FAISS.load_local(self.db_index_name, self.embeddings_tool)
         retriever = loaded_db.as_retriever()
         docs = retriever.get_relevant_documents(question)
-        self.logger.info(f"Retrieved {len(docs)} documents.")
+        if self.verbose:
+            self.logger.info(f"Question: {question}")
+            self.logger.info(f"Retrieved {len(docs)} documents.")
         if self.verbose:
             for idx, doc in enumerate(docs):
                 self.logger.info(f"Doc {idx + 1}:\n {doc}")

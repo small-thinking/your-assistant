@@ -77,7 +77,7 @@ class KnowledgeIndexOrchestrator(Orchestrator):
     def __init__(self, db_name: str = "faiss.db", verbose: bool = False):
         """Initialize the orchestrator."""
         super().__init__(verbose=verbose)
-        self.indexer = KnowledgeIndexer(db_name=db_name)
+        self.indexer = KnowledgeIndexer(db_name=db_name, verbose=verbose)
 
     def process(
         self, path: str, chunk_size: int = 1000, chunk_overlap: int = 100
@@ -119,6 +119,19 @@ class QAOrchestrator(ReadOrchestrator):
         return response
 
 
+# indexer = KnowledgeIndexOrchestrator(verbose=True)
+# indexer.process("/Users/yjiang/Downloads/test-pdf.pdf")
+# indexer.process("https://arxiv.org/pdf/1706.03762.pdf")
+# indexer.process("/Users/yjiang/Downloads/JingFu-Profile.pdf")
+
+
+questions = [
+    "What is a transformer?",
+    "What is OKR mentioned by John Dorr?",
+    "Do you know the company Treelab? Who is the CTO?",
+]
 qa = QAOrchestrator()
-res = qa.process("What is the definition of OKR?")
-print(res)
+for question in questions:
+    res = qa.process(question)
+    print(res)
+    print("\n")
