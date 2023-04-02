@@ -17,7 +17,7 @@ def setup():
     return root_path
 
 
-class TestTools:
+class TestIndexer:
     @pytest.mark.parametrize(
         "config_file, file_path, expected",
         [
