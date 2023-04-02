@@ -117,3 +117,25 @@ class QAOrchestrator(ReadOrchestrator):
             return ""
         response = self.qa.answer(prompt)
         return response
+
+
+# root_path = "/Users/yjiang/Downloads/docs"
+# file_list = os.listdir(root_path)
+# indexer = KnowledgeIndexOrchestrator(verbose=True)
+
+# for file_name in file_list:
+#     if file_name.endswith(".pdf"):
+#         file_path = os.path.join(root_path, file_name)
+#         indexer.process(path=file_path)
+
+
+qa = QAOrchestrator()
+questions = [
+    "TreeLab是什么公司？谁是CTO？",
+    "¿Cuál es la diferencia entre GPT-2 y GPT-3?",
+    "What's the advantage of constitutional AI?",
+]
+
+for question in questions:
+    print(qa.process(question))
+    print("=====================================")
