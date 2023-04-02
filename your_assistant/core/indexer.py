@@ -3,6 +3,7 @@
 """
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 from urllib.parse import urlparse
@@ -22,7 +23,7 @@ class KnowledgeIndexer:
 
     def __init__(self, db_name: str = "faiss.db", verbose: bool = False):
         nltk.download("averaged_perceptron_tagger")
-        self.logger = utils.Logger("PDFIndexer")
+        self.logger = utils.Logger("KnowledgeIndexer", verbose=verbose)
         self.db_name = db_name
         self.db_record_name = os.path.join(db_name, "index_record.json")
         self.db_index_name = os.path.join(db_name, "index")
@@ -51,7 +52,7 @@ class KnowledgeIndexer:
         Args:
             path (str): The path to the file. Can be a url.
         """
-
+        self.logger.info(f"Indexing {path}...")
         loader, source, filepath = self._init_loader(path=path)
         documents = self._extract_data(
             loader=loader, chunk_size=chunk_size, chunk_overlap=chunk_overlap
@@ -80,7 +81,7 @@ class KnowledgeIndexer:
                 source, filepath = utils.file_downloader(url=path)
                 loader = UnstructuredFileLoader(filepath)
             elif os.path.exists(path):
-                self.logger.info("Load local pdf loader.")
+                self.logger.info("Load local loader.")
                 loader = UnstructuredFileLoader(path)
                 source = path
             else:
@@ -111,6 +112,7 @@ class KnowledgeIndexer:
         return documents
 
     def _index_embeddings(self, documents: List[Document], source: str):
+        # type: ignore
         """Index a PDF file.
 
         Args:
@@ -124,6 +126,7 @@ class KnowledgeIndexer:
         # Update the source of each document.
         for doc in documents:
             doc.metadata["source"] = source
+            doc.page_content = re.sub(r"[^\w\s]|['\"]", "", doc.page_content)
         db = None
         if os.path.exists(self.db_index_name):
             self.logger.info(f"DB [{self.db_index_name}] exists, load it.")

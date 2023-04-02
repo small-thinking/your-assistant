@@ -57,7 +57,6 @@ class DocumentQA:
         retriever = loaded_db.as_retriever()
         docs = retriever.get_relevant_documents(question)
         if self.verbose:
-            self.logger.info(f"Question: {question}")
             self.logger.info(f"Retrieved {len(docs)} documents.")
         if self.verbose:
             for idx, doc in enumerate(docs):
@@ -66,8 +65,9 @@ class DocumentQA:
         prompt = self.prompt_template.format(
             question=question, doc_snippets=doc_snippets
         )
-        answers = self.llm(prompt=prompt)
-        return answers
+        answer = self.llm(prompt=prompt)
+        answer = f"Question: {question}.\nThe answer: {answer}."
+        return answer
 
     def _concate_docs(self, docs: List[Document]) -> str:
         """Concatenate a list of documents into a single string.
