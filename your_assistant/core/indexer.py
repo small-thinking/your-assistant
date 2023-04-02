@@ -5,7 +5,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import nltk
@@ -13,7 +13,7 @@ from langchain.docstore.document import Document
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
+from langchain.vectorstores import FAISS, VectorStore
 
 import your_assistant.core.utils as utils
 
@@ -127,17 +127,17 @@ class KnowledgeIndexer:
         for doc in documents:
             doc.metadata["source"] = source
             doc.page_content = re.sub(r"[^\w\s]|['\"]", "", doc.page_content)
-        db = None
+        db: Optional[Union[FAISS, VectorStore]] = None
         if os.path.exists(self.db_index_name):
             self.logger.info(f"DB [{self.db_index_name}] exists, load it.")
             db = FAISS.load_local(self.db_index_name, self.embeddings_tool)
         new_db = FAISS.from_documents(documents, self.embeddings_tool)
         if db:
-            db.merge_from(new_db)
+            db.merge_from(new_db)  # type: ignore
         else:
             db = new_db
         self.logger.info(f"Indexing done. {len(documents)} documents indexed.")
-        db.save_local(self.db_index_name)
+        db.save_local(self.db_index_name)  # type: ignore
         # Record the newly indexed documents. Delete the old index first.
         self.index_record["indexed_doc"].add(source)
         self.index_record["indexed_doc"] = list(self.index_record["indexed_doc"])

@@ -21,7 +21,9 @@ def load_env(env_file_path: str = ""):
 # Create a logger class that accept level setting.
 # The logger should be able to log to stdout and display the datetime, caller, and line of code.
 class Logger:
-    def __init__(self, logger_name: str, verbose: bool = True, level: Any = logging.INFO):
+    def __init__(
+        self, logger_name: str, verbose: bool = True, level: Any = logging.INFO
+    ):
         self.logger = logging.getLogger(logger_name)
         self.verbose = verbose
         self.logger.setLevel(level=level)
