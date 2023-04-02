@@ -117,21 +117,3 @@ class QAOrchestrator(ReadOrchestrator):
             return ""
         response = self.qa.answer(prompt)
         return response
-
-
-# indexer = KnowledgeIndexOrchestrator(verbose=True)
-# indexer.process("/Users/yjiang/Downloads/test-pdf.pdf")
-# indexer.process("https://arxiv.org/pdf/1706.03762.pdf")
-# indexer.process("/Users/yjiang/Downloads/JingFu-Profile.pdf")
-
-
-questions = [
-    "What is a transformer?",
-    "What is OKR mentioned by John Dorr?",
-    "Do you know the company Treelab? Who is the CTO?",
-]
-qa = QAOrchestrator()
-for question in questions:
-    res = qa.process(question)
-    print(res)
-    print("\n")
