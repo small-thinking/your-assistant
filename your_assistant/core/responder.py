@@ -37,10 +37,15 @@ class DocumentQA:
             self.embeddings_tool = OpenAIEmbeddings()  # type: ignore
         self.verbose = verbose
         prompt_template = """
-            Please answer the following question based on the retrieved document snippets. Do not use your own context knowledge.
-            Please also provide the source if there exists, in the format of content, document name, page number, at the end of the answer.
+            Please answer the following question based on the retrieved document snippets.
+            DO NOT use your own context knowledge. The answer should be in the same language as the question.
+
+            For each of the answers, please provide the source if there exists, in the following format:
+            <The word 'Source' translated in question language>: <page_content>, <document_name>, <page_number>.
+
             Question: {question}
             Document snippets: {doc_snippets}
+
         """
         self.prompt_template = PromptTemplate(
             input_variables=["question", "doc_snippets"],
