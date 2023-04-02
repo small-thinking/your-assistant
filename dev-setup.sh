@@ -29,6 +29,7 @@ if ! command -v poetry &> /dev/null; then
 fi
 
 # 4. Activate the Poetry environment (implicitly activated when using 'poetry' commands)
+poetry shell
 
 # 5. Install dependencies using Poetry
 poetry install
