@@ -24,7 +24,7 @@ class PDFIndexer:
         nltk.download("averaged_perceptron_tagger")
         self.logger = utils.Logger("PDFIndexer")
         self.db_name = db_name
-        self.embeddings_tool = OpenAIEmbeddings()
+        self.embeddings_tool = OpenAIEmbeddings()  # type: ignore
 
     def index(self, file_path: str, chunk_size: int = 1000, chunk_overlap: int = 100):
         """Index a given PDF file into the vector DB according to the name.
@@ -113,15 +113,16 @@ class DocumentQA:
     ):
         self.logger = utils.Logger("DocumentQA")
         self.db_name = db_name
+        self.llm: Any = None
         # Init the LLM.
         if llm_type == "RevBard":
             self.llm = llms.RevBard()
         else:
             self.llm = llms.RevChatGPT()
         if test_mode:
-            self.embeddings_tool = FakeEmbeddings()
+            self.embeddings_tool = FakeEmbeddings()  # type: ignore
         else:
-            self.embeddings_tool = OpenAIEmbeddings()
+            self.embeddings_tool = OpenAIEmbeddings()  # type: ignore
         self.verbose = verbose
         prompt_template = """
             Please answer the following question based on the retrieved document snippets. Do not use your own context knowledge.
