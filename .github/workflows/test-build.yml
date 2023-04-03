@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   check_draft:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     outputs:
       is_draft: ${{ steps.check_pr.outputs.is_draft }}
@@ -27,7 +28,7 @@ jobs:
           echo "::set-output name=is_draft::$is_draft"
   test:
     needs: check_draft
-    if: ${{ needs.check_draft.outputs.is_draft == 'false' }}
+    if: ${{ needs.check_draft.outputs.is_draft == 'false' || github.event_name == 'push' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
