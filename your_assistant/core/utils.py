@@ -1,11 +1,12 @@
 """Utilities.
 """
 import inspect
+import itertools
 import logging
 import os
 import ssl
 import urllib.parse
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
@@ -93,3 +94,17 @@ def file_downloader(url: str, retry_with_no_verify: bool = True) -> Tuple[str, s
         outfile.write(response.read())
 
     return url, filepath
+
+
+def chunk_iterator(lst: List[Any], chunk_size: int):
+    """Chunk a list into smaller lists.
+
+    Args:
+        lst (List[Any]): The list to be chunked.
+        chunk_size (int): The size of each chunk.
+
+    Returns:
+        Iterator: The chunked list.
+    """
+    it = iter(lst)
+    return iter(lambda: tuple(itertools.islice(it, chunk_size)), ())

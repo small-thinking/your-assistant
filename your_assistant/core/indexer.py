@@ -1,6 +1,7 @@
 """Core logic of the indexers.
 
 """
+import itertools
 import json
 import os
 import re
@@ -46,18 +47,29 @@ class KnowledgeIndexer:
                 self.index_record["indexed_doc"] = {}
         self.index_record["indexed_doc"] = set(self.index_record["indexed_doc"])
 
-    def index(self, path: str, chunk_size: int = 1000, chunk_overlap: int = 100):
+    def index(
+        self,
+        path: str,
+        chunk_size: int = 1000,
+        chunk_overlap: int = 100,
+        batch_size: int = 50,
+    ):
         """Index a given file into the vector DB according to the name.
 
         Args:
             path (str): The path to the file. Can be a url.
+            chunk_size (int, optional): The chunk size to split the text. Defaults to 1000.
+            chunk_overlap (int, optional): The chunk overlap to split the text. Defaults to 100.
+            batch_size (int, optional): The batch size to index the embeddings. Defaults to 50.
         """
         self.logger.info(f"Indexing {path}...")
         loader, source, filepath = self._init_loader(path=path)
         documents = self._extract_data(
             loader=loader, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
-        self._index_embeddings(documents=documents, source=source)
+        self._index_embeddings(
+            documents=documents, source=source, batch_size=batch_size
+        )
         # Remove the downloaded file.
         if os.path.exists(filepath):
             os.remove(filepath)
@@ -111,7 +123,9 @@ class KnowledgeIndexer:
         )
         return documents
 
-    def _index_embeddings(self, documents: List[Document], source: str):
+    def _index_embeddings(
+        self, documents: List[Document], source: str, batch_size: int = 100
+    ):
         # type: ignore
         """Index a PDF file.
 
@@ -131,11 +145,19 @@ class KnowledgeIndexer:
         if os.path.exists(self.db_index_name):
             self.logger.info(f"DB [{self.db_index_name}] exists, load it.")
             db = FAISS.load_local(self.db_index_name, self.embeddings_tool)
-        new_db = FAISS.from_documents(documents, self.embeddings_tool)
-        if db:
-            db.merge_from(new_db)  # type: ignore
-        else:
-            db = new_db
+        # Index the new documents in batches.
+        for idx, document_batch in enumerate(
+            utils.chunk_iterator(documents, batch_size)
+        ):
+            if self.verbose:
+                self.logger.info(
+                    f"Indexing {len(document_batch)} documents (batch {idx})."
+                )
+            new_db = FAISS.from_documents(document_batch, self.embeddings_tool)
+            if db:
+                db.merge_from(new_db)  # type: ignore
+            else:
+                db = new_db
         self.logger.info(f"Indexing done. {len(documents)} documents indexed.")
         db.save_local(self.db_index_name)  # type: ignore
         # Record the newly indexed documents. Delete the old index first.
