@@ -1,12 +1,11 @@
 name: Run tests
 
 on:
-  push:
+  pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  push:
     branches:
       - main
 
@@ -15,20 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check_draft:
-    runs-on: ubuntu-latest
-    outputs:
-      is_draft: ${{ steps.check_pr.outputs.is_draft }}
-    steps:
-      - name: Check if PR is draft
-        id: check_pr
-        run: |
-          is_draft=$(curl --header "Authorization: Bearer ${{ secrets.GH_API_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }} | jq '.draft')
-          echo "is_draft=$is_draft" >> $GITHUB_ENV
-          echo "::set-output name=is_draft::$is_draft"
   test:
-    needs: check_draft
-    if: ${{ needs.check_draft.outputs.is_draft == 'false' }}
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
