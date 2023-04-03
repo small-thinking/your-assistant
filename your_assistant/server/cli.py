@@ -3,7 +3,9 @@
 import argparse
 import sys
 
-import your_assistant.core.orchestrator as orchestrator
+from colorama import Fore, Style
+
+from your_assistant.core.orchestrator import *
 
 
 # Define the function that initialize the argument parser that has the param of the prompt.
@@ -18,10 +20,10 @@ def parse_args() -> argparse.Namespace:
     )
 
     orchestrators = {
-        "RevChatGPTOrchestrator": orchestrator.RevChatGPTOrchestrator,
-        "RevBardOrchestrator": orchestrator.RevBardOrchestrator,
-        "QAOrchestrator": orchestrator.QAOrchestrator,
-        "KnowledgeIndexOrchestrator": orchestrator.KnowledgeIndexOrchestrator,
+        "RevChatGPTOrchestrator": RevChatGPTOrchestrator,
+        "RevBardOrchestrator": RevBardOrchestrator,
+        "QAOrchestrator": QAOrchestrator,
+        "KnowledgeIndexOrchestrator": KnowledgeIndexOrchestrator,
     }
     subparsers = parser.add_subparsers(
         help="orchestrator", dest="orchestrator", required=True
@@ -54,7 +56,11 @@ def run():
         # Init prompt as user_input if is RevChatGPTOrchestrator, RevBardOrchestrator, QAOrchestrator.
         while True:
             try:
-                user_input = input("\nEnter your conversation (exit with ctrl + C): ")
+                user_input = input(
+                    Fore.GREEN
+                    + "\nEnter your conversation (exit with ctrl + C): "
+                    + Style.RESET_ALL
+                )
                 args.prompt = user_input
                 response = orchestrator.process(args)
                 print(response)
