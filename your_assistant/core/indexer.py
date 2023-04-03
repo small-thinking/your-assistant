@@ -53,7 +53,7 @@ class KnowledgeIndexer:
         chunk_size: int = 1000,
         chunk_overlap: int = 100,
         batch_size: int = 50,
-    ):
+    ) -> str:
         """Index a given file into the vector DB according to the name.
 
         Args:
@@ -73,7 +73,7 @@ class KnowledgeIndexer:
         # Remove the downloaded file.
         if os.path.exists(filepath):
             os.remove(filepath)
-        return documents
+        return "Index finished."
 
     def _init_loader(self, path: str) -> Tuple[UnstructuredFileLoader, str, str]:
         """Index the data according to the path.
@@ -166,6 +166,6 @@ class KnowledgeIndexer:
         index_size = len(self.index_record["indexed_doc"])
         self.index_record_path.unlink()
         with self.index_record_path.open("w") as f:
-            json.dump(self.index_record, f)
+            json.dump(self.index_record, f, indent=2)
             self.logger.info(f"Updated index record with [{index_size}] records.")
         self.logger.info(f"DB saved to {self.db_name}.")
