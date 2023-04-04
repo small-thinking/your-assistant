@@ -28,6 +28,11 @@ flask-cors = "^3.0.10"
 pre-commit = "^3.2.1"
 colorama = "^0.4.6"
 unstructured-inference = "0.2.5"
+ebooklib = "^0.18"
+mobi = "^0.3.3"
+html2text = "^2020.1.16"
+tiktoken = "^0.3.3"
+pandoc = "^2.3"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.0.0"

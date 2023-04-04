@@ -12,15 +12,19 @@ from urllib.parse import urlparse
 import nltk
 from langchain.docstore.document import Document
 from langchain.document_loaders import UnstructuredFileLoader
+from langchain.document_loaders.base import BaseLoader
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import TokenTextSplitter
 from langchain.vectorstores import FAISS, VectorStore
 
+import your_assistant.core.parser as parser
 import your_assistant.core.utils as utils
 
 
 class KnowledgeIndexer:
     """Index a PDF file into a vector DB."""
+
+    _FILE_EXTENSIONS = set([".pdf", ".mobi", ".txt", ".html"])
 
     def __init__(self, db_name: str = "faiss.db", verbose: bool = False):
         nltk.download("averaged_perceptron_tagger")
@@ -75,7 +79,7 @@ class KnowledgeIndexer:
             os.remove(filepath)
         return "Index finished."
 
-    def _init_loader(self, path: str) -> Tuple[UnstructuredFileLoader, str, str]:
+    def _init_loader(self, path: str) -> Tuple[BaseLoader, str, str]:
         """Index the data according to the path.
 
         Args:
@@ -90,11 +94,19 @@ class KnowledgeIndexer:
             filepath = ""
             if all([result.scheme, result.netloc]):
                 self.logger.info("Download online file.")
-                source, filepath = utils.file_downloader(url=path)
-                loader = UnstructuredFileLoader(filepath)
-            elif os.path.exists(path):
+                source, path = utils.file_downloader(url=path)
+            if os.path.exists(path):
                 self.logger.info("Load local loader.")
-                loader = UnstructuredFileLoader(path)
+                extension = os.path.splitext(path)[1]
+                if extension not in KnowledgeIndexer._FILE_EXTENSIONS:
+                    raise ValueError(
+                        f"File extension not supported: {path}. "
+                        f"Only support {KnowledgeIndexer._FILE_EXTENSIONS}."
+                    )
+                if extension == ".mobi":
+                    loader = parser.MobiLoader(path=path)
+                else:
+                    loader = UnstructuredFileLoader(path)
                 source = path
             else:
                 raise ValueError(f"File not found: {path}")
@@ -103,7 +115,7 @@ class KnowledgeIndexer:
         return loader, source, filepath
 
     def _extract_data(
-        self, loader: Any, chunk_size: int = 1000, chunk_overlap: int = 100
+        self, loader: BaseLoader, chunk_size: int = 500, chunk_overlap: int = 50
     ):
         """Index a PDF file.
 
@@ -117,7 +129,7 @@ class KnowledgeIndexer:
         # OpenAI embeddings are limited to 8191 tokens.
         # See: https://platform.openai.com/docs/guides/embeddings/what-are-embeddings.
         documents = loader.load_and_split(
-            text_splitter=RecursiveCharacterTextSplitter(
+            text_splitter=TokenTextSplitter(
                 chunk_size=chunk_size, chunk_overlap=chunk_overlap
             )
         )
@@ -146,9 +158,7 @@ class KnowledgeIndexer:
             self.logger.info(f"DB [{self.db_index_name}] exists, load it.")
             db = FAISS.load_local(self.db_index_name, self.embeddings_tool)
         # Index the new documents in batches.
-        for idx, document_batch in enumerate(
-            utils.chunk_iterator(documents, batch_size)
-        ):
+        for idx, document_batch in enumerate(utils.chunk_list(documents, batch_size)):
             if self.verbose:
                 self.logger.info(
                     f"Indexing {len(document_batch)} documents (batch {idx})."

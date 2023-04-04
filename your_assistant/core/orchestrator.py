@@ -124,14 +124,14 @@ class KnowledgeIndexOrchestrator(Orchestrator):
         parser.add_argument(
             "-c",
             "--chunk_size",
-            default=1000,
+            default=500,
             type=int,
             help="The size of the chunk to partition the document into sections for embedding.",
         )
         parser.add_argument(
             "-o",
             "--chunk_overlap",
-            default=100,
+            default=50,
             type=int,
             help="The overlap of the chunk to partition the document into sections for embedding.",
         )
