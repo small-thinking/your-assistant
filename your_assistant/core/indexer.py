@@ -88,6 +88,7 @@ class KnowledgeIndexer:
         Returns:
             Tuple[UnstructuredFileLoader, str, str]: The loader, the source, and the downloaded filepath.
         """
+        loader: BaseLoader
         try:
             # If the path is a url, download the file.
             result = urlparse(path)
