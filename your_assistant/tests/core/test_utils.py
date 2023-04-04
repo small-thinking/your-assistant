@@ -25,7 +25,6 @@ def test_chunk_list(input, chunk_size, expected):
     assert list(chunk_iterator) == expected
 
 
-# pytest.mark.parametric tests for the function xml_to_markdown
 @pytest.mark.parametrize(
     "input, expected",
     [
