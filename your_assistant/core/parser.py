@@ -13,11 +13,11 @@ from langchain.docstore.document import Document
 from langchain.document_loaders.base import BaseLoader
 from langchain.text_splitter import *
 
+from your_assistant.core.utils import xml_to_markdown
+
 
 class MobiLoader(BaseLoader):
     """Loader for e-books."""
-
-    _DEFAULT_CHUNK_SIZE = 700
 
     def __init__(self, path: str):
         super().__init__()
@@ -43,21 +43,45 @@ class MobiLoader(BaseLoader):
         return [document]
 
 
-# def run():
-#     # file_path = "/Users/yjiang/Downloads/docs/First, Break All the Rules_ Wha - Marcus Buckingham.epub"
-#     file_path = "/Users/yjiang/Downloads/docs/Philosophical Investigations - Ludwig Wittgenstein.mobi"
-#     mobi_loader = MobiLoader(file_path)
-#     chunk_size, chunk_overlap = 500, 50
-#     documents = mobi_loader.load_and_split(
-#         text_splitter=TokenTextSplitter(
-#             chunk_size=chunk_size, chunk_overlap=chunk_overlap
-#         )
-#     )
-#     print(len(documents))
-#     for i in range(5):
-#         print(f"Document {i}")
-#         print(documents[i])
-#         print("\n")
+class EpubLoader(BaseLoader):
+    """Loader for epub documents."""
 
+    def __init__(self, path: str):
+        super().__init__()
+        self.path = path
 
-# run()
+    def load(self) -> List[Document]:
+        """Parse a .epub file and extract the authors, title, and content per page.
+
+        Returns:
+            A dictionary containing authors, title, and chunked contents.
+        """
+        file_extension = os.path.splitext(self.path)[1]
+
+        if file_extension != ".epub":
+            raise ValueError(f"Unsupported file format: {file_extension}")
+
+        book = epub.read_epub(self.path)
+        title = book.get_metadata("DC", "title")[0][0]
+        authors = [author[0] for author in book.get_metadata("DC", "creator")]
+
+        documents: List[Document] = []
+        page_number = 0
+        for item in book.get_items():
+            if item.get_type() == ebooklib.ITEM_DOCUMENT:
+                page_number += 1
+                content = item.get_content().decode("utf-8")
+                if "<?xml version='1.0' encoding='utf-8'?>" in content:
+                    content = xml_to_markdown(content)
+                documents.append(
+                    Document(
+                        page_content=content,
+                        metadata={
+                            "source": self.path,
+                            "title": title,
+                            "authors": authors,
+                            "page": page_number,
+                        },
+                    )
+                )
+        return documents

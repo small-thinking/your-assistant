@@ -1,7 +1,6 @@
 """Core logic of the indexers.
 
 """
-import itertools
 import json
 import os
 import re
@@ -24,7 +23,7 @@ import your_assistant.core.utils as utils
 class KnowledgeIndexer:
     """Index a PDF file into a vector DB."""
 
-    _FILE_EXTENSIONS = set([".pdf", ".mobi", ".txt", ".html"])
+    _FILE_EXTENSIONS = set([".pdf", ".mobi", ".epub", ".txt", ".html"])
 
     def __init__(self, db_name: str = "faiss.db", verbose: bool = False):
         nltk.download("averaged_perceptron_tagger")
@@ -106,6 +105,8 @@ class KnowledgeIndexer:
                     )
                 if extension == ".mobi":
                     loader = parser.MobiLoader(path=path)
+                elif extension == ".epub":
+                    loader = parser.EpubLoader(path=path)
                 else:
                     loader = UnstructuredFileLoader(path)
                 source = path
