@@ -6,10 +6,12 @@ import logging
 import os
 import ssl
 import urllib.parse
-from typing import Any, List, Tuple
+import xml.etree.ElementTree as ET
+from typing import Any, Iterator, List, Tuple
 from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
+from nltk.tokenize import word_tokenize
 
 
 def load_env(env_file_path: str = ""):
@@ -96,7 +98,7 @@ def file_downloader(url: str, retry_with_no_verify: bool = True) -> Tuple[str, s
     return url, filepath
 
 
-def chunk_iterator(lst: List[Any], chunk_size: int):
+def chunk_list(lst: List[Any], chunk_size: int) -> Iterator:
     """Chunk a list into smaller lists.
 
     Args:
@@ -108,3 +110,42 @@ def chunk_iterator(lst: List[Any], chunk_size: int):
     """
     it = iter(lst)
     return iter(lambda: tuple(itertools.islice(it, chunk_size)), ())
+
+
+def xml_to_markdown(xml_string: str) -> str:
+    """This function is used to convert document annotations in XML format to Markdown.
+
+    Args:
+        xml_string (str): The document annotated in XML.
+
+    Returns:
+        str: The document annotated in Markdown.
+    """
+    markdown_text = []
+    # Parse the XML
+    xml_string = xml_string.replace("<?xml version='1.0' encoding='utf-8'?>", "")
+    root = ET.fromstring(xml_string.strip())
+    # Iterate through the elements
+    for element in root.iter():
+        if element.tag.endswith("p"):
+            markdown_text.append("\n")
+
+        if element.tag.endswith("a"):
+            markdown_text.append(f"[{element.text}]({element.get('href')})")
+        elif element.tag.endswith("span"):
+            if "Body-Italics" in element.get("class", ""):
+                markdown_text.append(f"*{element.text}*")
+            elif "Body-Superscript" in element.get("class", ""):
+                markdown_text.append(f"<sup>{element.text}</sup>")
+            else:
+                markdown_text.append(element.text or "")
+        elif element.tag.endswith("hr"):
+            markdown_text.append("\n---\n")
+        elif element.tag.endswith("ul"):
+            markdown_text.append("\n")
+        elif element.tag.endswith("li"):
+            markdown_text.append(f"\n- ")
+        else:
+            markdown_text.append(element.text or "")
+
+    return "".join(markdown_text).strip()
