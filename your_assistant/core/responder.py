@@ -8,6 +8,7 @@ from langchain import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import FakeEmbeddings, OpenAIEmbeddings
 from langchain.vectorstores import FAISS
+from langchain.vectorstores.base import VectorStoreRetriever
 
 import your_assistant.core.llms as llms
 import your_assistant.core.utils as utils
@@ -37,11 +38,11 @@ class DocumentQA:
             self.embeddings_tool = OpenAIEmbeddings()  # type: ignore
         self.verbose = verbose
         prompt_template = """
-            Please answer the following question based on the retrieved document snippets.
+            Please provide an informative ANSWER to the following question based on the retrieved document snippets.
             DO NOT use your own context knowledge. The answer should be in the same language as the question.
 
-            For each of the answers, please provide the source if there exists, in the following format:
-            <The word 'Source' translated in question language>: <page_content>, <document_name>, <page_number>.
+            After the answer, PLEASE PROVIDE THE context of the sources, in the following format:
+            <The word 'Source' translated in question language>: <original words>, <document path>, <page number>.
 
             Question: {question}
             Document snippets: {doc_snippets}
@@ -52,14 +53,14 @@ class DocumentQA:
             template=prompt_template,
         )
 
-    def answer(self, question: str) -> str:
+    def answer(self, question: str, k: int = 5) -> str:
         """Answer a given question.
 
         Args:
             question (str): The question to answer.
         """
         loaded_db = FAISS.load_local(self.db_index_name, self.embeddings_tool)
-        retriever = loaded_db.as_retriever()
+        retriever = VectorStoreRetriever(vectorstore=loaded_db, search_type="mmr", k=k)  # type: ignore
         docs = retriever.get_relevant_documents(question)
         if self.verbose:
             self.logger.info(f"Retrieved {len(docs)} documents.")
