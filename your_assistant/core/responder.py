@@ -53,14 +53,14 @@ class DocumentQA:
             template=prompt_template,
         )
 
-    def answer(self, question: str) -> str:
+    def answer(self, question: str, k: int = 5) -> str:
         """Answer a given question.
 
         Args:
             question (str): The question to answer.
         """
         loaded_db = FAISS.load_local(self.db_index_name, self.embeddings_tool)
-        retriever = VectorStoreRetriever(vectorstore=loaded_db, search_type="mmr", k=5)
+        retriever = VectorStoreRetriever(vectorstore=loaded_db, search_type="mmr", k=k)  # type: ignore
         docs = retriever.get_relevant_documents(question)
         if self.verbose:
             self.logger.info(f"Retrieved {len(docs)} documents.")
