@@ -7,6 +7,14 @@ from colorama import Fore, Style
 
 from your_assistant.core.orchestrator import *
 
+ORCHESTRATORS = {
+    "ChatGPT": ChatGPTOrchestrator,
+    "RevChatGPT": RevChatGPTOrchestrator,
+    "RevBard": RevBardOrchestrator,
+    "QA": QAOrchestrator,
+    "KnowledgeIndex": KnowledgeIndexOrchestrator,
+}
+
 
 # Define the function that initialize the argument parser that has the param of the prompt.
 def parse_args() -> argparse.Namespace:
@@ -19,17 +27,11 @@ def parse_args() -> argparse.Namespace:
         help="Whether to print the verbose output.",
     )
 
-    orchestrators = {
-        "RevChatGPTOrchestrator": RevChatGPTOrchestrator,
-        "RevBardOrchestrator": RevBardOrchestrator,
-        "QAOrchestrator": QAOrchestrator,
-        "KnowledgeIndexOrchestrator": KnowledgeIndexOrchestrator,
-    }
     subparsers = parser.add_subparsers(
         help="orchestrator", dest="orchestrator", required=True
     )
 
-    for name, orchestrator in orchestrators.items():
+    for name, orchestrator in ORCHESTRATORS.items():
         subparser = subparsers.add_parser(name)
         orchestrator.add_arguments_to_parser(subparser)  # type: ignore
 
@@ -40,18 +42,20 @@ def parse_args() -> argparse.Namespace:
 # Define the function that runs the orchestrator.
 def run():
     args = parse_args()
-    orchestrator_cls = getattr(sys.modules[__name__], args.orchestrator)
+    orchestrator_cls = ORCHESTRATORS[args.orchestrator]
+    # orchestrator_cls = getattr(sys.modules[__name__], args.orchestrator)
     orchestrator = orchestrator_cls.create_from_args(args)
 
     print(f"You are using {args.orchestrator}.")
     # Init path as user_input if is KnowledgeIndexOrchestrator.
-    if args.orchestrator == "KnowledgeIndexOrchestrator":
+    if args.orchestrator == "KnowledgeIndex":
         response = orchestrator.process(args)
         print(response)
     elif args.orchestrator in [
-        "RevChatGPTOrchestrator",
-        "RevBardOrchestrator",
-        "QAOrchestrator",
+        "ChatGPT",
+        "RevChatGPT",
+        "RevBard",
+        "QA",
     ]:
         # Init prompt as user_input if is RevChatGPTOrchestrator, RevBardOrchestrator, QAOrchestrator.
         while True:
