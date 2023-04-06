@@ -4,6 +4,8 @@ import argparse
 import os
 from abc import ABC, abstractmethod
 
+import openai
+
 from your_assistant.core.indexer import KnowledgeIndexer
 from your_assistant.core.llms import RevBard, RevChatGPT
 from your_assistant.core.responder import DocumentQA
@@ -39,6 +41,71 @@ class Orchestrator(ABC):
     @abstractmethod
     def process(self, args: argparse.Namespace) -> str:
         raise NotImplementedError("process must be implemented.")
+
+
+class ChatGPTOrchestrator(Orchestrator):
+    """The orchestrator that uses the ChatGPT."""
+
+    def __init__(
+        self,
+        verbose: bool = False,
+        model: str = "gpt-3.5-turbo",
+        temperature: float = 0.1,
+        max_token: int = 300,
+    ):
+        """Initialize the orchestrator."""
+        super().__init__(verbose=verbose)
+        self.model = model
+        self.temperature = temperature
+        self.max_token = max_token
+        self.llm = openai.ChatCompletion
+
+    @classmethod
+    def _add_arguments_to_parser(cls, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("-m", "--model", default="gpt-3.5-turbo", type=str)
+        parser.add_argument(
+            "-t",
+            "--temperature",
+            default=0.1,
+            type=float,
+            help="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output"
+            " more random, while lower values like 0.2 will make it more focused and deterministic.",
+        )
+        parser.add_argument(
+            "-a",
+            "--max-token",
+            default=300,
+            type=int,
+            help="The total length of input tokens and generated tokens is limited by the model's context length.",
+        )
+
+    @classmethod
+    def create_from_args(cls, args: argparse.Namespace) -> "Orchestrator":
+        """Create the orchestrator from the arguments."""
+        return cls(
+            verbose=args.verbose,
+            model=args.model,
+            temperature=args.temperature,
+            max_token=args.max_token,
+        )
+
+    def process(self, args: argparse.Namespace) -> str:
+        """Process the prompt.
+
+        Args:
+            prompt (str): The prompt to the agent.
+        """
+        if len(args.prompt) == 0:
+            return ""
+
+        api_response = self.llm.create(
+            model=self.model,
+            messages=[{"role": "user", "content": args.prompt}],
+            max_tokens=self.max_token,
+            temperature=self.temperature,
+        )
+        response = api_response.choices[0].message.content
+        return response
 
 
 class RevChatGPTOrchestrator(Orchestrator):
