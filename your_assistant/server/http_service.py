@@ -1,5 +1,7 @@
 """Http service for your assistant.
 """
+from argparse import Namespace
+
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 
@@ -27,7 +29,9 @@ def init_service():
 def handle_chatgpt_request():
     if request.method == "POST":
         prompt = request.json["prompt"]
-        response = chatgpt_orchestrator.process(prompt=prompt)
+        args = Namespace()
+        args.prompt = prompt
+        response = chatgpt_orchestrator.process(args=args)
         return {"response": response}
 
 
@@ -36,7 +40,9 @@ def handle_chatgpt_request():
 def handle_bard_request():
     if request.method == "POST":
         prompt = request.json["prompt"]
-        response = bard_orchestrator.process(prompt=prompt)
+        args = Namespace()
+        args.prompt = prompt
+        response = bard_orchestrator.process(args=args)
         return {"response": response}
 
 
