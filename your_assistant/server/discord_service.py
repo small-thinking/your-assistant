@@ -25,6 +25,7 @@ class DiscordBot(commands.Bot):
         )
         self.chat_orchestrator = RevChatGPTOrchestrator(verbose=True)
         self.bard_orchestrator = RevBardOrchestrator(verbose=True)
+        self.qa_orchestrator = QAOrchestrator(verbose=True)
 
     async def on_ready(self):
         """When the bot is ready."""
@@ -44,18 +45,33 @@ bot = DiscordBot()
 @app_commands.describe(prompt="prompt")
 async def chat(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the ChatGPT bot."""
-    await speak_to_bot(interaction, prompt, bot.chat_orchestrator)
+    args = argparse.Namespace()
+    args.prompt = prompt
+    await speak_to_bot(interaction, args, bot.chat_orchestrator)
 
 
 @bot.tree.command(name="bard")
 @app_commands.describe(prompt="prompt")
 async def bard(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the Bard bot."""
-    await speak_to_bot(interaction, prompt, bot.bard_orchestrator)
+    args = argparse.Namespace()
+    args.prompt = prompt
+    await speak_to_bot(interaction, args, bot.bard_orchestrator)
+
+
+@bot.tree.command(name="qa")
+@app_commands.describe(prompt="prompt")
+async def qa(interaction: discord.Interaction, prompt: str) -> None:
+    """Speak to the QA bot."""
+    args = argparse.Namespace()
+    args.prompt = prompt
+    await speak_to_bot(interaction, args, bot.qa_orchestrator)
 
 
 async def speak_to_bot(
-    interaction: discord.Interaction, prompt: str, orchestrator: Orchestrator
+    interaction: discord.Interaction,
+    args: argparse.Namespace,
+    orchestrator: Orchestrator,
 ) -> None:
     """Speak to the bot."""
     try:
@@ -66,14 +82,17 @@ async def speak_to_bot(
             interaction.channel,
         )
         bot.logger.info(
-            f"Received message from {user} in channel [{channel}]: {prompt}"
+            f"Received message from {user} in channel [{channel}]: {args.prompt}"
         )
-        response = orchestrator.process(prompt=prompt)
+
+        response = orchestrator.process(args=args)
         user_mention = interaction.user.mention
         response = f"{user_mention} {response}"
         await interaction.followup.send(response)
     except Exception as e:
-        bot.logger.error(f"Failed to send message: {e}")
+        error_message = f"Failed to send message: {e}"
+        bot.logger.error(error_message)
+        await interaction.followup.send(error_message)
 
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
