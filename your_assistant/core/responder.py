@@ -28,7 +28,9 @@ class DocumentQA:
         self.db_index_name = os.path.join(db_name, "index")
         self.llm: Any = None
         # Init the LLM.
-        if llm_type == "RevBard":
+        if llm_type == "ChatGPT":
+            self.llm = llms.ChatGPT()
+        elif llm_type == "RevBard":
             self.llm = llms.RevBard()
         else:
             self.llm = llms.RevChatGPT()

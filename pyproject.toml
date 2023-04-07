@@ -33,6 +33,7 @@ mobi = "^0.3.3"
 html2text = "^2020.1.16"
 tiktoken = "^0.3.3"
 pandoc = "^2.3"
+transformers = "^4.27.4"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.0.0"
