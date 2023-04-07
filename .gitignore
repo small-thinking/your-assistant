@@ -5,3 +5,6 @@
 
 # DB
 *.db
+
+# Test coverage
+**/.coverage
