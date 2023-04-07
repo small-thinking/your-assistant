@@ -5,7 +5,6 @@ from typing import List, Optional
 
 import openai
 from Bard import Chatbot as BardChat
-from langchain import PromptTemplate
 from langchain.llms.base import LLM
 from revChatGPT.V1 import Chatbot
 

@@ -53,6 +53,7 @@ class LLMOrchestrator(Orchestrator):
 
     def __init__(self, args: argparse.Namespace = argparse.Namespace()):
         super().__init__(args)
+        self.logger = Logger(type(self).__name__)
         self.llm: Optional[LLM] = None
         self._init_llm(args=args)
         if not self.llm:
@@ -87,7 +88,7 @@ class LLMOrchestrator(Orchestrator):
         if args.use_memory:
             history: Dict[str, Any] = self.memory.load_memory_variables({})
             if self.verbose:
-                print(f"History: {history}\n\n")
+                self.logger.info(f"History: {history}\n\n")
             args.prompt = textwrap.dedent(
                 f"""
                 Current conversation:
@@ -96,7 +97,7 @@ class LLMOrchestrator(Orchestrator):
             """
             )
         if self.verbose:
-            print(f"Prompt: {args.prompt}\n\n")
+            self.logger.info(f"Prompt: {args.prompt}\n\n")
         response = self._process(args=args)
         if args.use_memory:
             # Only save the user original prompt without history augmentation.
@@ -294,7 +295,10 @@ class QAOrchestrator(LLMOrchestrator):
         """Initialize the orchestrator."""
         super().__init__(args=args)
         self.qa = DocumentQA(
-            db_name=args.db_name, llm_type=args.llm_type, test_mode=args.test_mode
+            db_name=args.db_name,
+            llm_type=args.llm_type,
+            test_mode=args.test_mode,
+            verbose=args.verbose,
         )
 
     def _init_llm(self, args: argparse.Namespace):
@@ -338,5 +342,7 @@ class QAOrchestrator(LLMOrchestrator):
         """
         if len(args.prompt) == 0:
             return ""
+        if args.verbose:
+            self.logger.info(f"Prompt: {args.prompt}")
         response = self.qa.answer(args.prompt)
         return response

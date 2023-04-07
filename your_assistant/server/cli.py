@@ -1,7 +1,6 @@
 """Run the orchestrator in the command line.
 """
 import argparse
-import sys
 
 from colorama import Fore, Style
 
