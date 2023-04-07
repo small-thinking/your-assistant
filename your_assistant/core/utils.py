@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from typing import Any, Iterator, List, Tuple
 from urllib.request import Request, urlopen
 
+from colorama import Fore
 from dotenv import load_dotenv
 from nltk.tokenize import word_tokenize
 
@@ -46,7 +47,9 @@ class Logger:
         caller_frame = inspect.stack()[1]
         caller_name = caller_frame[3]
         caller_line = caller_frame[2]
-        self.logger.info(f"({caller_name} L{caller_line}): {message}")
+        self.logger.info(
+            Fore.BLUE + f"({caller_name} L{caller_line}): {message}" + Fore.RESET
+        )
 
     def error(self, message):
         if not self.verbose:
@@ -54,7 +57,9 @@ class Logger:
         caller_frame = inspect.stack()[1]
         caller_name = caller_frame[3]
         caller_line = caller_frame[2]
-        self.logger.error(f"({caller_name} L{caller_line}): {message}")
+        self.logger.error(
+            Fore.RED + f"({caller_name} L{caller_line}): {message}" + Fore.RESET
+        )
 
     def warning(self, message):
         if not self.verbose:
@@ -62,7 +67,9 @@ class Logger:
         caller_frame = inspect.stack()[1]
         caller_name = caller_frame[3]
         caller_line = caller_frame[2]
-        self.logger.warning(f"({caller_name} L{caller_line}): {message}")
+        self.logger.warning(
+            Fore.YELLOW + f"({caller_name} L{caller_line}): {message}" + Fore.RESET
+        )
 
 
 def file_downloader(url: str, retry_with_no_verify: bool = True) -> Tuple[str, str]:
