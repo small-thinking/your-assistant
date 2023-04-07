@@ -14,6 +14,20 @@ repos:
     language: system
     pass_filenames: false
 
+  - id: coverage
+    name: Test coverage
+    entry: coverage run -m pytest your_assistant/tests
+    language: system
+    pass_filenames: false
+    requires: [pytest]
+
+  - id: coverage_report
+    name: Test coverage
+    entry: coverage report --fail-under=60
+    language: system
+    pass_filenames: false
+    requires: [coverage]
+
 - repo: https://github.com/psf/black
   rev: 23.3.0
   hooks:
