@@ -20,6 +20,7 @@ class Orchestrator(ABC):
 
     def __init__(self, args: argparse.Namespace = argparse.Namespace()):
         load_env()
+        self.args = args
         self.verbose = args.verbose
         self.logger = Logger(type(self).__name__)
 
