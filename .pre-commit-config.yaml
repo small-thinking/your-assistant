@@ -23,7 +23,7 @@ repos:
 
   - id: coverage_report
     name: Test coverage
-    entry: coverage report
+    entry: coverage report --fail-under=60
     language: system
     pass_filenames: false
     requires: [coverage]
