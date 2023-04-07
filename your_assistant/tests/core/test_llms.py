@@ -21,7 +21,27 @@ class TestLLMs:
     @pytest.mark.parametrize(
         "config_file, test_mode, expected",
         [
-            (".env.template", True, "This is a test response."),
+            (".env.template", True, "This is a test chatgpt response."),
+            (
+                ".env.not-exist",
+                False,
+                "Please set OPENAI_API_KEY before chatting with ChatGPT.",
+            ),
+        ],
+    )
+    def test_chatgpt(self, setup, config_file, test_mode, expected):
+        """Test the ChatGPT LLM."""
+        root_path = setup
+        for key in os.environ:
+            del os.environ[key]
+        load_env(env_file_path=os.path.join(root_path, config_file))
+        llm = llms.ChatGPT(test_mode=test_mode)
+        assert llm("This is a test chatgpt prompt.") == expected
+
+    @pytest.mark.parametrize(
+        "config_file, test_mode, expected",
+        [
+            (".env.template", True, "This is a test revchatgpt response."),
             (
                 ".env.not-exist",
                 False,
@@ -41,7 +61,7 @@ class TestLLMs:
     @pytest.mark.parametrize(
         "config_file, test_mode, expected",
         [
-            (".env.template", True, "This is a test response."),
+            (".env.template", True, "This is a test revbard response."),
             (
                 ".env.not-exist",
                 False,
