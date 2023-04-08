@@ -49,7 +49,7 @@ docker build -t your-assistant-discord-bot -f Dockerfile.discord . ; docker run 
 
 ### How to build the Http service.
 ```
-docker build -t your-assistant-discord-bot -f Dockerfile.http_service . ; docker run -it your-assistant-http-service
+docker build -t your-assistant-http-service -f Dockerfile.http_service . ; docker run -it your-assistant-http-service
 ```
 
 ### Clean up docker images
