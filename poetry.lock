@@ -3374,28 +3374,6 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
-name = "pypdf"
-version = "3.7.0"
-description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "pypdf-3.7.0-py3-none-any.whl", hash = "sha256:b50c2d3c807af2f75c945b7bdd8f8bb01d513a0c25d6b66bf299b9fad1cbc91c"},
-    {file = "pypdf-3.7.0.tar.gz", hash = "sha256:da98eb41428b26f5ab23561cc125eedff450147598d6b6159e62943edc0008fe"},
-]
-
-[package.dependencies]
-typing_extensions = {version = ">=3.10.0.0", markers = "python_version < \"3.10\""}
-
-[package.extras]
-crypto = ["PyCryptodome"]
-dev = ["black", "flit", "pip-tools", "pre-commit (<2.18.0)", "pytest-cov", "wheel"]
-docs = ["myst_parser", "sphinx", "sphinx_rtd_theme"]
-full = ["Pillow", "PyCryptodome"]
-image = ["Pillow"]
-
-[[package]]
 name = "pyreadline3"
 version = "3.4.1"
 description = "A python implementation of GNU readline."
@@ -4990,4 +4968,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "91b318d07160fa422843755e63be1283595dbe63eafddf150967554bb168f1d9"
+content-hash = "d39007efd3615e7ef2a424f997cbb44de20067aba456f60f61e18be6c3ce9aea"
