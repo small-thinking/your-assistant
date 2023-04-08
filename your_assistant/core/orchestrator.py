@@ -227,7 +227,7 @@ class KnowledgeIndexOrchestrator(Orchestrator):
         super()._add_arguments_to_parser(parser=parser)
         parser.add_argument(
             "-d",
-            "--db_name",
+            "--db-name",
             default="faiss.db",
             type=str,
             help="The name of the database to store the embeddings. Default is faiss.db.",
@@ -241,14 +241,14 @@ class KnowledgeIndexOrchestrator(Orchestrator):
         )
         parser.add_argument(
             "-c",
-            "--chunk_size",
+            "--chunk-size",
             default=500,
             type=int,
             help="The size of the chunk to partition the document into sections for embedding. Default is 500.",
         )
         parser.add_argument(
             "-o",
-            "--chunk_overlap",
+            "--chunk-overlap",
             default=50,
             type=int,
             help="The overlap of the chunk to partition the document into sections for embedding. Default is 50.",
@@ -289,7 +289,7 @@ class KnowledgeIndexOrchestrator(Orchestrator):
             return response
 
 
-class QAOrchestrator(LLMOrchestrator):
+class QAOrchestrator(Orchestrator):
     """The orchestrator that uses the QA agent."""
 
     def __init__(self, args: argparse.Namespace):
@@ -300,6 +300,9 @@ class QAOrchestrator(LLMOrchestrator):
             llm_type=args.llm_type,
             test_mode=args.test_mode,
             verbose=args.verbose,
+            max_token_size=args.max_token_size,
+            use_memory=args.use_memory,
+            memory_token_size=args.memory_token_size,
         )
 
     def _init_llm(self, args: argparse.Namespace):
@@ -311,31 +314,48 @@ class QAOrchestrator(LLMOrchestrator):
         super()._add_arguments_to_parser(parser=parser)
         parser.add_argument(
             "-d",
-            "--db_name",
+            "--db-name",
             default="faiss.db",
             type=str,
             help="The name of the database to store the embeddings. Default: faiss.db.",
         )
         parser.add_argument(
             "-l",
-            "--llm_type",
+            "--llm-type",
             default="ChatGPT",
             type=str,
             help="The type of the language model to use. Default: ChatGPT.",
         )
         parser.add_argument(
             "-t",
-            "--test_mode",
+            "--test-mode",
             default=False,
             action="store_true",
             help="Test the model. Default: False.",
+        )
+        parser.add_argument(
+            "--max-token-size",
+            default=800,
+            type=int,
+            help="The maximum number of tokens to use for the context. Default: 800.",
+        )
+        parser.add_argument(
+            "--use-memory",
+            action="store_true",
+            help="Whether to use the memory.",
+        )
+        parser.add_argument(
+            "--memory-token-size",
+            default=300,
+            type=int,
+            help="The maximum number of tokens used to keep the memory.",
         )
 
     @classmethod
     def create_from_args(cls, args: argparse.Namespace) -> "Orchestrator":
         return cls(args=args)
 
-    def _process(self, args: argparse.Namespace) -> str:
+    def process(self, args: argparse.Namespace) -> str:
         """Process the prompt.
 
         Args:
@@ -345,5 +365,5 @@ class QAOrchestrator(LLMOrchestrator):
             return ""
         if args.verbose:
             self.logger.info(f"Prompt: {args.prompt}")
-        response = self.qa.answer(args.prompt)
+        response = self.qa.answer(question=args.prompt)
         return response

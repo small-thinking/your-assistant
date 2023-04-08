@@ -1,9 +1,8 @@
 """Run the orchestrator in the command line.
 """
-import argparse
-
 from colorama import Fore, Style
 
+import your_assistant.core.utils as utils
 from your_assistant.core.orchestrator import *
 
 ORCHESTRATORS = {
@@ -15,37 +14,15 @@ ORCHESTRATORS = {
 }
 
 
-# Define the function that initialize the argument parser that has the param of the prompt.
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Orchestrator")
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        default=True,
-        action="store_true",
-        help="Whether to print the verbose output.",
-    )
-
-    subparsers = parser.add_subparsers(
-        help="orchestrator", dest="orchestrator", required=True
-    )
-
-    for name, orchestrator in ORCHESTRATORS.items():
-        subparser = subparsers.add_parser(name)
-        orchestrator.add_arguments_to_parser(subparser)  # type: ignore
-
-    args = parser.parse_args()
-    return args
-
-
 # Define the function that runs the orchestrator.
 def run():
-    args = parse_args()
+    parser = utils.init_parser(ORCHESTRATORS)
+    args = parser.parse_args()
     orchestrator_cls = ORCHESTRATORS[args.orchestrator]
     # orchestrator_cls = getattr(sys.modules[__name__], args.orchestrator)
     orchestrator = orchestrator_cls.create_from_args(args)
-
-    print(f"You are using {args.orchestrator}.")
+    params = vars(args)
+    print(f"You are using {args.orchestrator}, with parameters: {params}")
     # Init path as user_input if is KnowledgeIndexOrchestrator.
     if args.orchestrator == "KnowledgeIndex":
         response = orchestrator.process(args)

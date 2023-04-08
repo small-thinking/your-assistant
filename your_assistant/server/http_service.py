@@ -7,6 +7,7 @@ import openai
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 
+import your_assistant.core.utils as utils
 from your_assistant.core.orchestrator import *
 from your_assistant.core.utils import load_env
 
@@ -26,45 +27,18 @@ ORCHESTRATORS = {
 }
 
 
-# Define the function that initialize the argument parser that has the param of the prompt.
-def init_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Orchestrator")
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        default=True,
-        action="store_true",
-        help="Whether to print the verbose output.",
-    )
-
-    subparsers = parser.add_subparsers(
-        help="orchestrator", dest="orchestrator", required=True
-    )
-
-    for name, orchestrator in ORCHESTRATORS.items():
-        subparser = subparsers.add_parser(name)
-        orchestrator.add_arguments_to_parser(subparser)  # type: ignore
-
-    return parser
-
-
 def init_service():
     global chatgpt_orchestrator
     global rev_chatgpt_orchestrator
     global rev_bard_orchestrator
+    global qa_orchestrator
 
     load_env()
 
     chatgpt_orchestrator = _init_chatgpt_orchestrator()
     rev_chatgpt_orchestrator = _init_rev_chat_gpt_orchestrator()
     rev_bard_orchestrator = _init_rev_bard_orchestrator()
-
-
-def _init_chatgpt_orchestrator() -> ChatGPTOrchestrator:
-    parser = init_parser()
-    args_to_pass = ["ChatGPT", "--use-memory"]
-    args = parser.parse_args(args_to_pass)
-    return ChatGPTOrchestrator(args)
+    qa_orchestrator = _init_qa_orchestrator()
 
 
 def _copy_args(source_args: argparse.Namespace, dest_args: argparse.Namespace):
@@ -74,18 +48,39 @@ def _copy_args(source_args: argparse.Namespace, dest_args: argparse.Namespace):
         setattr(dest_args, key, value)
 
 
+def _init_chatgpt_orchestrator() -> ChatGPTOrchestrator:
+    parser = utils.init_parser(ORCHESTRATORS)
+    args_to_pass = ["ChatGPT", "--use-memory"]
+    args = parser.parse_args(args_to_pass)
+    return ChatGPTOrchestrator(args)
+
+
 def _init_rev_chat_gpt_orchestrator() -> RevChatGPTOrchestrator:
-    parser = init_parser()
+    parser = utils.init_parser(ORCHESTRATORS)
     args_to_pass = ["RevChatGPT", "--use-memory"]
     args = parser.parse_args(args_to_pass)
     return RevChatGPTOrchestrator(args)
 
 
 def _init_rev_bard_orchestrator() -> RevBardOrchestrator:
-    parser = init_parser()
+    parser = utils.init_parser(ORCHESTRATORS)
     args_to_pass = ["RevBard", "--use-memory"]
     args = parser.parse_args(args_to_pass)
     return RevBardOrchestrator(args)
+
+
+def _init_qa_orchestrator() -> QAOrchestrator:
+    parser = utils.init_parser(ORCHESTRATORS)
+    args_to_pass = [
+        "QA",
+        "--use-memory",
+        "--max-token-size",
+        "800",
+        "--memory-token-size",
+        "300",
+    ]
+    args = parser.parse_args(args_to_pass)
+    return QAOrchestrator(args)
 
 
 @app.route("/api/v1/chatgpt", methods=["POST"])
@@ -140,6 +135,17 @@ def handle_audio_transcribe_request():
 
         audio_file.close()
         return {"transcript": transcript}
+
+
+@app.route("/api/v1/qa", methods=["POST"])
+def handle_qa_request():
+    if request.method == "POST":
+        prompt = request.json["prompt"]
+        runtime_args = Namespace()
+        runtime_args.prompt = prompt
+        _copy_args(qa_orchestrator.args, runtime_args)
+        response = qa_orchestrator.process(args=runtime_args)
+        return {"response": response}
 
 
 @app.route("/health", methods=["GET"])

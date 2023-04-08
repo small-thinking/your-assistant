@@ -1,5 +1,6 @@
 """Utilities.
 """
+import argparse
 import inspect
 import itertools
 import logging
@@ -7,12 +8,12 @@ import os
 import ssl
 import urllib.parse
 import xml.etree.ElementTree as ET
-from typing import Any, Iterator, List, Tuple
+from typing import Any, Dict, Iterator, List, Tuple, Type
 from urllib.request import Request, urlopen
 
 from colorama import Fore
 from dotenv import load_dotenv
-from nltk.tokenize import word_tokenize
+from transformers import GPT2Tokenizer
 
 
 def load_env(env_file_path: str = ""):
@@ -156,3 +157,46 @@ def xml_to_markdown(xml_string: str) -> str:
             markdown_text.append(element.text or "")
 
     return "".join(markdown_text).strip()
+
+
+def init_parser(orchestrator_mapping: Dict[str, Type[Any]]) -> argparse.ArgumentParser:
+    """Define the function that initialize the argument parser that has the param of the prompt.
+
+    Args:
+        orchestrator_mapping (Dict[str, Orchestrator]): The mapping between the string to the type.
+
+    Returns:
+        argparse.ArgumentParser: The constructed argument parser.
+    """
+    parser = argparse.ArgumentParser(description="Orchestrator")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        default=True,
+        action="store_true",
+        help="Whether to print the verbose output.",
+    )
+
+    subparsers = parser.add_subparsers(
+        help="orchestrator", dest="orchestrator", required=True
+    )
+
+    for name, orchestrator in orchestrator_mapping.items():
+        subparser = subparsers.add_parser(name)
+        orchestrator.add_arguments_to_parser(subparser)  # type: ignore
+
+    return parser
+
+
+def truncate_text_by_tokens(text: str, max_token_size: int) -> str:
+    """Truncate text to a maximum number of tokens."""
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    tokens = tokenizer.encode(text)
+
+    # Truncate tokens if necessary
+    if len(tokens) > max_token_size:
+        tokens = tokens[:max_token_size]
+
+    # Convert tokens back to text
+    truncated_text = tokenizer.decode(tokens)
+    return truncated_text
