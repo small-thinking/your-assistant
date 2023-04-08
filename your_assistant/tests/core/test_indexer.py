@@ -4,9 +4,9 @@ Run this test with command: pytest your_assistant/tests/core/test_indexer.py
 import os
 
 import pytest
-from langchain.document_loaders import UnstructuredFileLoader
 
 import your_assistant.core.indexer as indexer
+import your_assistant.core.loader as loader
 from your_assistant.core.utils import load_env
 
 
@@ -29,7 +29,7 @@ class TestIndexer:
             (
                 ".env.template",
                 "testdata/test-pdf.pdf",
-                UnstructuredFileLoader,
+                loader.PdfLoader,
             ),
         ],
     )
@@ -89,5 +89,5 @@ class TestIndexer:
                 loader=loader, chunk_size=chunk_size, chunk_overlap=chunk_overlap
             )
             assert len(data) == 1
-            assert data[0].page_content == expected
+            assert data[0].page_content.strip() == expected.strip()
             assert source == path
