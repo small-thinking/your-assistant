@@ -47,6 +47,10 @@ pre-commit install
 docker build -t your-assistant-discord-bot -f Dockerfile.discord . ; docker run -it your-assistant-discord-bot
 ```
 
+### How to build the Http service.
+```
+docker build -t your-assistant-http-service -f Dockerfile.http_service . ; docker run -it your-assistant-http-service
+```
 
 ### Clean up docker images
 ```
