@@ -16,7 +16,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import TokenTextSplitter
 from langchain.vectorstores import FAISS, VectorStore
 
-import your_assistant.core.parser as parser
+import your_assistant.core.loader as loader_lib
 import your_assistant.core.utils as utils
 
 
@@ -104,9 +104,9 @@ class KnowledgeIndexer:
                         f"Only support {KnowledgeIndexer._FILE_EXTENSIONS}."
                     )
                 if extension == ".mobi":
-                    loader = parser.MobiLoader(path=path)
+                    loader = loader_lib.MobiLoader(path=path)
                 elif extension == ".epub":
-                    loader = parser.EpubLoader(path=path)
+                    loader = loader_lib.EpubLoader(path=path)
                 else:
                     loader = UnstructuredFileLoader(path)
                 source = path

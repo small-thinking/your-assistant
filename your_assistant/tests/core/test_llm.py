@@ -1,12 +1,12 @@
 """Test the LLMs.
-Run this test with command: pytest your_assistant/tests/core/test_llms.py
+Run this test with command: pytest your_assistant/tests/core/test_llm.py
 """
 import os
 
 import pytest
 from langchain import PromptTemplate
 
-import your_assistant.core.llms as llms
+import your_assistant.core.llm as llm_lib
 from your_assistant.core.utils import load_env
 
 
@@ -35,7 +35,7 @@ class TestLLMs:
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
-        llm = llms.ChatGPT(test_mode=test_mode)
+        llm = llm_lib.ChatGPT(test_mode=test_mode)
         assert llm("This is a test chatgpt prompt.") == expected
 
     @pytest.mark.parametrize(
@@ -55,7 +55,7 @@ class TestLLMs:
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
-        llm = llms.RevChatGPT(test_mode=test_mode)
+        llm = llm_lib.RevChatGPT(test_mode=test_mode)
         assert llm("This is a test prompt.") == expected
 
     @pytest.mark.parametrize(
@@ -75,5 +75,5 @@ class TestLLMs:
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
-        llm = llms.RevBard(test_mode=test_mode)
+        llm = llm_lib.RevBard(test_mode=test_mode)
         assert llm("This is a test prompt.") == expected
