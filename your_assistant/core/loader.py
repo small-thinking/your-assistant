@@ -2,10 +2,10 @@
 """
 import os
 import shutil
-from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
 import ebooklib
+import fitz
 import html2text
 import mobi
 from ebooklib import epub
@@ -84,4 +84,46 @@ class EpubLoader(BaseLoader):
                         },
                     )
                 )
+        return documents
+
+
+class PdfLoader(BaseLoader):
+    """Loader for PDF documents."""
+
+    def __init__(self, path: str):
+        super().__init__()
+        self.path = path
+
+    def load(self) -> List[Document]:
+        """Parse a .pdf file and extract the authors, title, and content per page.
+
+        Returns:
+            A list of Document objects containing page_content and metadata.
+        """
+        file_extension = os.path.splitext(self.path)[1]
+
+        if file_extension != ".pdf":
+            raise ValueError(f"Unsupported file format: {file_extension}")
+
+        pdf_doc = fitz.open(self.path)
+        title = pdf_doc.metadata["title"]
+        authors = pdf_doc.metadata["author"].split(", ")
+
+        documents: List[Document] = []
+
+        for page_number in range(len(pdf_doc)):
+            page = pdf_doc.load_page(page_number)
+            content = page.get_text("text")
+            documents.append(
+                Document(
+                    page_content=content,
+                    metadata={
+                        "source": self.path,
+                        "title": title,
+                        "authors": authors,
+                        "page": page_number + 1,
+                    },
+                )
+            )
+
         return documents

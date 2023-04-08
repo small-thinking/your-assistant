@@ -107,6 +107,8 @@ class KnowledgeIndexer:
                     loader = loader_lib.MobiLoader(path=path)
                 elif extension == ".epub":
                     loader = loader_lib.EpubLoader(path=path)
+                elif extension == ".pdf":
+                    loader = loader_lib.PdfLoader(path=path)
                 else:
                     loader = UnstructuredFileLoader(path)
                 source = path

@@ -22,7 +22,6 @@ dpytest = "^0.6.3"
 googlebard = "^0.0.5"
 unstructured = {extras = ["local-inference"], version = "^0.5.8"}
 nltk = "^3.8.1"
-pypdf = "^3.7.0"
 faiss-cpu = "^1.7.3"
 flask-cors = "^3.0.10"
 pre-commit = "^3.2.1"
@@ -35,6 +34,7 @@ tiktoken = "^0.3.3"
 pandoc = "^2.3"
 transformers = "^4.27.4"
 coverage = "^7.2.3"
+pymupdf = "^1.21.1"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.0.0"
