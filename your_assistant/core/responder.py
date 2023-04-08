@@ -10,7 +10,7 @@ from langchain.embeddings import FakeEmbeddings, OpenAIEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.vectorstores.base import VectorStoreRetriever
 
-import your_assistant.core.llms as llms
+import your_assistant.core.llm as llm_lib
 import your_assistant.core.utils as utils
 
 
@@ -29,11 +29,11 @@ class DocumentQA:
         self.llm: Any = None
         # Init the LLM.
         if llm_type == "ChatGPT":
-            self.llm = llms.ChatGPT()
+            self.llm = llm_lib.ChatGPT()
         elif llm_type == "RevBard":
-            self.llm = llms.RevBard()
+            self.llm = llm_lib.RevBard()
         else:
-            self.llm = llms.RevChatGPT()
+            self.llm = llm_lib.RevChatGPT()
         if test_mode:
             self.embeddings_tool = FakeEmbeddings()  # type: ignore
         else:

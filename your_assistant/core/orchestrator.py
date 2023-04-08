@@ -10,7 +10,7 @@ from langchain.llms.base import LLM
 from langchain.memory import ConversationSummaryBufferMemory
 
 from your_assistant.core.indexer import KnowledgeIndexer
-from your_assistant.core.llms import ChatGPT, RevBard, RevChatGPT
+from your_assistant.core.llm import ChatGPT, RevBard, RevChatGPT
 from your_assistant.core.responder import DocumentQA
 from your_assistant.core.utils import Logger, load_env
 
