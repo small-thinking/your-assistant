@@ -3,7 +3,9 @@ repos:
   rev: v4.4.0
   hooks:
   - id: trailing-whitespace
+    exclude_types: [markdown]
   - id: end-of-file-fixer
+    exclude_types: [markdown]
 
 - repo: local
   hooks:
@@ -13,6 +15,7 @@ repos:
     args: [your_assistant/tests]
     language: system
     pass_filenames: false
+    exclude_types: [markdown]
 
   - id: coverage
     name: Test coverage
@@ -32,14 +35,17 @@ repos:
   rev: 5.12.0
   hooks:
   - id: isort
+    exclude_types: [markdown]
 
 - repo: https://github.com/psf/black
   rev: 23.3.0
   hooks:
   - id: black
     language_version: python3.9
+    exclude_types: [markdown]
 
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.1.1
   hooks:
   - id: mypy
+    exclude_types: [markdown]
