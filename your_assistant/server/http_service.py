@@ -158,4 +158,4 @@ def handle_health_request():
 if __name__ == "__main__":
     init_service()
     app.run(host="0.0.0.0", port=32167, debug=True)
-    app.run(host="0.0.0.0", port=32168, debug=True, ssl_context='adhoc')
+    app.run(host="0.0.0.0", port=32168, debug=True, ssl_context="adhoc")
