@@ -73,6 +73,7 @@ class LLMOrchestrator(Orchestrator):
     def _add_arguments_to_parser(cls, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "--use-memory",
+            default=True,
             action="store_true",
             help="Whether to use the memory.",
         )
@@ -220,17 +221,24 @@ class KnowledgeIndexOrchestrator(Orchestrator):
     def __init__(self, args: argparse.Namespace):
         """Initialize the orchestrator."""
         super().__init__(args=args)
-        self.indexer = KnowledgeIndexer(db_name=args.db_name, verbose=args.verbose)
+
+        self.indexer = KnowledgeIndexer(args=args)
 
     @classmethod
     def _add_arguments_to_parser(cls, parser: argparse.ArgumentParser) -> None:
         super()._add_arguments_to_parser(parser=parser)
         parser.add_argument(
             "-d",
-            "--db-name",
+            "--db-path",
             default="faiss.db",
             type=str,
             help="The name of the database to store the embeddings. Default is faiss.db.",
+        )
+        parser.add_argument(
+            "--embedding-tool-name",
+            default="openai",
+            type=str,
+            help="The name of the embedding tool to use, e.g. openai. Default is openai.",
         )
         parser.add_argument(
             "-p",
@@ -280,7 +288,8 @@ class KnowledgeIndexOrchestrator(Orchestrator):
                 response = self.indexer.index(
                     path=file_path, chunk_size=chunk_size, chunk_overlap=chunk_overlap
                 )
-                responses.append(response)
+                if response:
+                    responses.append(response)
             return "\n".join(responses)
         else:
             response = self.indexer.index(
@@ -341,6 +350,7 @@ class QAOrchestrator(Orchestrator):
         )
         parser.add_argument(
             "--use-memory",
+            default=True,
             action="store_true",
             help="Whether to use the memory.",
         )

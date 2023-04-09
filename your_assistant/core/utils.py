@@ -49,7 +49,7 @@ class Logger:
         caller_name = caller_frame[3]
         caller_line = caller_frame[2]
         self.logger.info(
-            Fore.BLUE + f"({caller_name} L{caller_line}): {message}" + Fore.RESET
+            Fore.CYAN + f"({caller_name} L{caller_line}): {message}" + Fore.RESET
         )
 
     def error(self, message):

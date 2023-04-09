@@ -19,7 +19,6 @@ def run():
     parser = utils.init_parser(ORCHESTRATORS)
     args = parser.parse_args()
     orchestrator_cls = ORCHESTRATORS[args.orchestrator]
-    # orchestrator_cls = getattr(sys.modules[__name__], args.orchestrator)
     orchestrator = orchestrator_cls.create_from_args(args)
     params = vars(args)
     print(f"You are using {args.orchestrator}, with parameters: {params}")
@@ -43,7 +42,7 @@ def run():
                 )
                 args.prompt = user_input
                 response = orchestrator.process(args)
-                print(response)
+                print(Fore.BLUE + response + Style.RESET_ALL)
             except KeyboardInterrupt:
                 exit(0)
     else:
