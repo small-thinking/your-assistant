@@ -7,8 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.embeddings.base import Embeddings
-from langchain.vectorstores import FAISS, VectorStore
+from langchain.vectorstores import FAISS
 
 import your_assistant.core.indexer as indexer
 import your_assistant.core.loader as loader
@@ -21,7 +20,6 @@ def setup():
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(test_folder_path)))
     args = argparse.Namespace()
     args.verbose = False
-    args.db_path = "faiss.db"
     args.embedding_tool_name = "openai"
     return root_path, args
 
@@ -31,25 +29,27 @@ class TestIndexer:
         "db_path, config_file, expected",
         [
             (None, ".env.template", ValueError("db_path is not specified.")),
-            ("faiss.db", ".env.template", FAISS),
+            ("test-faiss.db", ".env.template", type(None)),
         ],
     )
     def test_init_index_db(self, setup, db_path, config_file, expected):
         root_path, args = setup
+        args.db_path = (
+            os.path.join(os.path.dirname(__file__), db_path) if db_path else None
+        )
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
-        knowledge_indexer = indexer.KnowledgeIndexer(args=args)
-        args = argparse.Namespace()
-        args.db_path = db_path
         embeddings_tool = OpenAIEmbeddings()
         if isinstance(expected, ValueError):
             with pytest.raises(ValueError) as e:
+                knowledge_indexer = indexer.KnowledgeIndexer(args=args)
                 knowledge_indexer._init_index_db(
                     args=args, embeddings_tool=embeddings_tool
                 )
             assert str(e.value) == expected.args[0]
         else:
+            knowledge_indexer = indexer.KnowledgeIndexer(args=args)
             knowledge_indexer._init_index_db(args=args, embeddings_tool=embeddings_tool)
             assert type(knowledge_indexer.embeddings_db) == expected
 
@@ -78,6 +78,7 @@ class TestIndexer:
     )
     def test_indexer_init_loader(self, setup, config_file, path, expected):
         root_path, args = setup
+        args.db_path = "faiss.db"
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
@@ -115,6 +116,7 @@ class TestIndexer:
         self, setup, config_file, path, chunk_size, chunk_overlap, expected
     ):
         root_path, args = setup
+        args.db_path = "faiss.db"
         for key in os.environ:
             del os.environ[key]
         load_env(env_file_path=os.path.join(root_path, config_file))
