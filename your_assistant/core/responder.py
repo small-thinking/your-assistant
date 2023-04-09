@@ -105,7 +105,7 @@ class DocumentQA:
             self.logger.info(
                 Fore.GREEN + f"Prompt: {truncated_prompt}\n\n" + Fore.RESET
             )
-        answer = self.llm(prompt=truncated_prompt)
+        answer = str(self.llm(prompt=truncated_prompt))
         if self.use_memory:
             # Only save the user original prompt without history augmentation.
             self.memory.save_context(inputs={"user": prompt}, outputs={"AI": answer})

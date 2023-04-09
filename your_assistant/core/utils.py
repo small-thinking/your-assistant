@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from transformers import GPT2Tokenizer
 
 
-def load_env(env_file_path: str = ""):
+def load_env(env_file_path: str = "") -> None:
     if env_file_path:
         load_dotenv(env_file_path)
     else:
@@ -42,17 +42,17 @@ class Logger:
 
         self.logger.addHandler(self.console_handler)
 
-    def info(self, message):
+    def info(self, message: str) -> None:
         if not self.verbose:
             return
         caller_frame = inspect.stack()[1]
         caller_name = caller_frame[3]
         caller_line = caller_frame[2]
         self.logger.info(
-            Fore.BLUE + f"({caller_name} L{caller_line}): {message}" + Fore.RESET
+            Fore.CYAN + f"({caller_name} L{caller_line}): {message}" + Fore.RESET
         )
 
-    def error(self, message):
+    def error(self, message: str) -> None:
         if not self.verbose:
             return
         caller_frame = inspect.stack()[1]
@@ -62,7 +62,7 @@ class Logger:
             Fore.RED + f"({caller_name} L{caller_line}): {message}" + Fore.RESET
         )
 
-    def warning(self, message):
+    def warning(self, message: str) -> None:
         if not self.verbose:
             return
         caller_frame = inspect.stack()[1]
@@ -106,7 +106,7 @@ def file_downloader(url: str, retry_with_no_verify: bool = True) -> Tuple[str, s
     return url, filepath
 
 
-def chunk_list(lst: List[Any], chunk_size: int) -> Iterator:
+def chunk_list(lst: List[Any], chunk_size: int) -> Iterator[Any]:
     """Chunk a list into smaller lists.
 
     Args:
@@ -183,7 +183,7 @@ def init_parser(orchestrator_mapping: Dict[str, Type[Any]]) -> argparse.Argument
 
     for name, orchestrator in orchestrator_mapping.items():
         subparser = subparsers.add_parser(name)
-        orchestrator.add_arguments_to_parser(subparser)  # type: ignore
+        orchestrator.add_arguments_to_parser(subparser)
 
     return parser
 
@@ -199,4 +199,4 @@ def truncate_text_by_tokens(text: str, max_token_size: int) -> str:
 
     # Convert tokens back to text
     truncated_text = tokenizer.decode(tokens)
-    return truncated_text
+    return str(truncated_text)
