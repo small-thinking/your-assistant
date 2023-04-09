@@ -28,13 +28,13 @@ class KnowledgeIndexer:
         Needed arguments:
             verbose: Whether to print out the verbose logs. (Default: False)
             db_path: The path to the vector database.
-            embedding_tool_name: The name of the embedding tool to use, e.g. openai.
+            embeddings_tool_name: The name of the embedding tool to use, e.g. openai.
         """
         self.verbose = False if not args.verbose else args.verbose
         nltk.download("averaged_perceptron_tagger")
         self.logger = utils.Logger("KnowledgeIndexer", verbose=self.verbose)
         self.supported_file_types: Set[str] = self._init_supported_file_types()
-        self.embeddings_tool = self._init_embedding_tool(args=args)
+        self.embeddings_tool = self._init_embeddings_tool(args=args)
         # Initialize the db index engine (e.g. FAISS) and db index record.
         if not args.db_path:
             raise ValueError("db_path is not specified.")
@@ -50,16 +50,17 @@ class KnowledgeIndexer:
         """
         return set([".pdf", ".mobi", ".epub", ".txt", ".html"])
 
-    def _init_embedding_tool(self, args: argparse.Namespace) -> Embeddings:
+    def _init_embeddings_tool(self, args: argparse.Namespace) -> Embeddings:
         """Initialize the embedding tool.
 
         Args:
             args (argparse.Namespace): The arguments passed in.
         """
-        if not args.embedding_tool_name:
-            raise ValueError("embedding_tool_name is not specified.")
-        if args.embedding_tool_name == "openai":
+        if not args.embeddings_tool_name:
+            raise ValueError("embeddings_tool_name is not specified.")
+        if args.embeddings_tool_name == "openai":
             return OpenAIEmbeddings()
+        raise ValueError(f"Unsupported embeddings tool: {args.embeddings_tool_name}.")
 
     def _init_index_db(
         self, args: argparse.Namespace, embeddings_tool: Embeddings
