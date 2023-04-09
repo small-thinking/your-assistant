@@ -1,10 +1,13 @@
 """Http service for your assistant.
 """
 import os
+import time
 from argparse import Namespace
 
 import openai
-from flask import Flask, request
+from flask import Flask
+from flask import g as app_ctx
+from flask import request
 from flask_cors import CORS, cross_origin
 
 import your_assistant.core.utils as utils
@@ -88,6 +91,25 @@ def before_request_callback():
     app.logger.debug("URL: %s, %s", request.url, request.method)
     app.logger.debug("Headers: %s", request.headers)
     app.logger.debug("Body: %s", request.get_data())
+    # Store the start time for the request
+    app_ctx.start_time = time.perf_counter()
+
+
+@app.after_request
+def after_request_callback(response):
+    # Get total time in milliseconds
+    total_time = time.perf_counter() - app_ctx.start_time
+    time_in_ms = int(total_time * 1000)
+    # Log the time taken for the endpoint
+    app.logger.debug(
+        "%s ms %s %s %s",
+        time_in_ms,
+        request.method,
+        request.path,
+        dict(request.args),
+    )
+    response.headers["X-Execution-Time"] = str(time_in_ms)
+    return response
 
 
 @app.route("/api/v1/chatgpt", methods=["POST"])
