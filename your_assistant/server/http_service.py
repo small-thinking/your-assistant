@@ -83,6 +83,13 @@ def _init_qa_orchestrator() -> QAOrchestrator:
     return QAOrchestrator(args)
 
 
+@app.before_request
+def before_request_callback():
+    app.logger.debug("URL: %s, %s", request.url, request.method)
+    app.logger.debug("Headers: %s", request.headers)
+    app.logger.debug("Body: %s", request.get_data())
+
+
 @app.route("/api/v1/chatgpt", methods=["POST"])
 def handle_chatgpt_request():
     if request.method == "POST":
