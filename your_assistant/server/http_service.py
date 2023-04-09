@@ -102,11 +102,12 @@ def after_request_callback(response):
     time_in_ms = int(total_time * 1000)
     # Log the time taken for the endpoint
     app.logger.debug(
-        "%s ms %s %s %s",
+        "%s ms %s %s %s %s",
         time_in_ms,
         request.method,
         request.path,
         dict(request.args),
+        response.get_data(),
     )
     response.headers["X-Execution-Time"] = str(time_in_ms)
     return response
