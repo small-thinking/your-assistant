@@ -10,7 +10,7 @@ Your Assistant has is an **open source** AI assistant that has the following pro
 # Development Guide
 
 ## Project management
-We use the following tools to east the project development:
+We use the following tools to ease the project development:
 1. poetry: package management.
 2. mypy: static type check.
 3. flake8 and black: coding style unification and formatting.
