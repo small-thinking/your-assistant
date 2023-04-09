@@ -1,8 +1,10 @@
 # Your Assistant
-Your Assistant is an **open source** AI assistant that can run on your local desktop and co-host with your private data.
+The vision of building your assistant is to enable everyone to use the AI assistnat in their daily life for free.
 
-Many aspect of the AI asisstant is configurable. For example, you can choose
-to access it from the Discord server, the HTTP service, or locally via command line.
+Your Assistant has is an **open source** AI assistant that has the following properties:
+1. It can (but not necessarily) run on your local device and co-host with your private data.
+2. It is designed to be client side agnostic and model agnostic, so the evolution of either side can make your assistant more usable.
+3. Many aspect of the AI asisstant is configurable. You can choose to access it from the Discord server, the HTTP service, or locally via command line.
 
 
 # Development Guide
@@ -36,8 +38,6 @@ Initialize pre-commit.
 ```
 pre-commit install
 ```
-
-
 
 ## Command shortcuts
 
