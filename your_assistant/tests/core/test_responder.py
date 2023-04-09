@@ -9,7 +9,7 @@ from your_assistant.core.utils import load_env
 
 
 @pytest.fixture()
-def setup():
+def setup() -> str:
     test_folder_path = os.path.dirname(os.path.abspath(__file__))
     root_path = os.path.dirname(os.path.dirname(os.path.dirname(test_folder_path)))
     return root_path

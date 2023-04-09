@@ -182,7 +182,7 @@ class KnowledgeIndexer:
 
     def _extract_data(
         self, loader: BaseLoader, chunk_size: int = 500, chunk_overlap: int = 50
-    ):
+    ) -> List[Document]:
         """Index a PDF file.
 
         Args:

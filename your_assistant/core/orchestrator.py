@@ -66,7 +66,7 @@ class LLMOrchestrator(Orchestrator):
                 )
             )
 
-    def _init_llm(self, args: argparse.Namespace):
+    def _init_llm(self, args: argparse.Namespace) -> None:
         raise NotImplementedError("_init_llm must be implemented.")
 
     @classmethod
@@ -120,7 +120,7 @@ class ChatGPTOrchestrator(LLMOrchestrator):
         """Initialize the orchestrator."""
         super().__init__(args=args)
 
-    def _init_llm(self, args: argparse.Namespace):
+    def _init_llm(self, args: argparse.Namespace) -> None:
         self.model = args.model
         self.temperature = args.temperature
         self.max_token = args.max_token
@@ -165,7 +165,7 @@ class RevChatGPTOrchestrator(LLMOrchestrator):
         """Initialize the orchestrator."""
         super().__init__(args=args)
 
-    def _init_llm(self, args: argparse.Namespace):
+    def _init_llm(self, args: argparse.Namespace) -> None:
         self.llm = RevChatGPT()
 
     @classmethod
@@ -196,7 +196,7 @@ class RevBardOrchestrator(LLMOrchestrator):
         for key, value in args_dict.items():
             print(f"{key}: {value}")
 
-    def _init_llm(self, args: argparse.Namespace):
+    def _init_llm(self, args: argparse.Namespace) -> None:
         self.llm = RevBard()
 
     @classmethod
@@ -314,7 +314,7 @@ class QAOrchestrator(Orchestrator):
             memory_token_size=args.memory_token_size,
         )
 
-    def _init_llm(self, args: argparse.Namespace):
+    def _init_llm(self, args: argparse.Namespace) -> None:
         if args.llm_type == "ChatGPT":
             self.llm = ChatGPT()
 

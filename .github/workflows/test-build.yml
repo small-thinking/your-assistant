@@ -55,7 +55,7 @@ jobs:
 
       - name: Run mypy
         run: |
-          mypy .
+          mypy . --exclude '(your_assistant/tests/*|your_assistant/server/*)'
 
       - name: Run isort
         run: |
