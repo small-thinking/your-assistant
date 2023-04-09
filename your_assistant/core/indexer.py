@@ -6,7 +6,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
 
 import nltk
@@ -59,7 +59,7 @@ class KnowledgeIndexer:
         if not args.embeddings_tool_name:
             raise ValueError("embeddings_tool_name is not specified.")
         if args.embeddings_tool_name == "openai":
-            return OpenAIEmbeddings()
+            return OpenAIEmbeddings()  # type: ignore
         raise ValueError(f"Unsupported embeddings tool: {args.embeddings_tool_name}.")
 
     def _init_index_db(
@@ -76,7 +76,7 @@ class KnowledgeIndexer:
             raise ValueError("db_path is not specified.")
         self.db_index_path = os.path.join(args.db_path, "index")
         self.embeddings_db_engine = FAISS
-        self.embeddings_db: VectorStore = None
+        self.embeddings_db: Optional[VectorStore] = None
         if os.path.exists(self.db_index_path):
             self.logger.info(f"DB [{self.db_index_path}] exists, load it.")
             self.embeddings_db = self.embeddings_db_engine.load_local(
