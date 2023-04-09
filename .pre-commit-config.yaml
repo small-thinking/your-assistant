@@ -15,6 +15,7 @@ repos:
     args: [your_assistant/tests]
     language: system
     pass_filenames: false
+    types: [python]
     exclude_types: [markdown]
 
   - id: coverage
