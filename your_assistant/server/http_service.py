@@ -128,6 +128,7 @@ def handle_audio_transcribe_request():
     # if model not specified, default to whisper-1; otherwise, use the specified model (only whisper-1 is available as of April 2023)
     if "model" not in request.form or request.form["model"] == "whisper-1":
         model = "whisper-1"
+        prompt = None
         if "prompt" in request.form:
             prompt = request.form["prompt"]
         # TODO(fuj): error handling; secure filename
