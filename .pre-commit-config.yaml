@@ -23,6 +23,7 @@ repos:
     entry: coverage run -m pytest your_assistant/tests
     language: system
     pass_filenames: false
+    types: [python]
     requires: [pytest]
 
   - id: coverage_report
@@ -30,6 +31,7 @@ repos:
     entry: coverage report --fail-under=65
     language: system
     pass_filenames: false
+    types: [python]
     requires: [coverage]
 
 - repo: https://github.com/pycqa/isort
