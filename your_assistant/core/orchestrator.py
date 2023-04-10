@@ -6,6 +6,7 @@ import textwrap
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
+from langchain.llms import OpenAIChat
 from langchain.llms.base import LLM
 from langchain.memory import ConversationSummaryBufferMemory
 
@@ -123,8 +124,13 @@ class ChatGPTOrchestrator(LLMOrchestrator):
     def _init_llm(self, args: argparse.Namespace) -> None:
         self.model = args.model
         self.temperature = args.temperature
-        self.max_token = args.max_token
-        self.llm = ChatGPT()
+        self.max_tokens = args.max_token
+        # self.llm = ChatGPT()
+        self.llm = OpenAIChat(
+            model_name=self.model,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+        )
 
     @classmethod
     def _add_arguments_to_parser(cls, parser: argparse.ArgumentParser) -> None:

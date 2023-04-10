@@ -7,8 +7,16 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+import your_assistant.core.utils as utils
 from your_assistant.core.orchestrator import *
 from your_assistant.core.utils import Logger, load_env
+
+ORCHESTRATORS = {
+    "ChatGPT": ChatGPTOrchestrator,
+    "RevChatGPT": RevChatGPTOrchestrator,
+    "RevBard": RevBardOrchestrator,
+    "QA": QAOrchestrator,
+}
 
 
 class DiscordBot(commands.Bot):
@@ -23,9 +31,28 @@ class DiscordBot(commands.Bot):
         self.activity = discord.Activity(
             type=discord.ActivityType.listening, name="/bard or /chat"
         )
-        self.chat_orchestrator = RevChatGPTOrchestrator(verbose=True)
-        self.bard_orchestrator = RevBardOrchestrator(verbose=True)
-        self.qa_orchestrator = QAOrchestrator(verbose=True)
+
+        self.chat_orchestrator = self._init_chatgpt_orchestrator()
+        self.bard_orchestrator = self._init_rev_bard_orchestrator()
+        self.qa_orchestrator = self._init_qa_orchestrator()
+
+    def _init_chatgpt_orchestrator(self) -> ChatGPTOrchestrator:
+        parser = utils.init_parser(ORCHESTRATORS)
+        args_to_pass = ["ChatGPT", "--use-memory"]
+        args = parser.parse_args(args_to_pass)
+        return ChatGPTOrchestrator(args)
+
+    def _init_qa_orchestrator(self) -> QAOrchestrator:
+        parser = utils.init_parser(ORCHESTRATORS)
+        args_to_pass = ["QA", "--use-memory"]
+        args = parser.parse_args(args_to_pass)
+        return QAOrchestrator(args)
+
+    def _init_rev_bard_orchestrator(self) -> RevBardOrchestrator:
+        parser = utils.init_parser(ORCHESTRATORS)
+        args_to_pass = ["RevBard", "--use-memory"]
+        args = parser.parse_args(args_to_pass)
+        return RevBardOrchestrator(args)
 
     async def on_ready(self):
         """When the bot is ready."""
@@ -47,6 +74,7 @@ async def chat(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the ChatGPT bot."""
     args = argparse.Namespace()
     args.prompt = prompt
+    args.use_memory = True
     await speak_to_bot(interaction, args, bot.chat_orchestrator)
 
 
@@ -56,6 +84,7 @@ async def bard(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the Bard bot."""
     args = argparse.Namespace()
     args.prompt = prompt
+    args.use_memory = True
     await speak_to_bot(interaction, args, bot.bard_orchestrator)
 
 
@@ -65,6 +94,7 @@ async def qa(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the QA bot."""
     args = argparse.Namespace()
     args.prompt = prompt
+    args.use_memory = True
     await speak_to_bot(interaction, args, bot.qa_orchestrator)
 
 
