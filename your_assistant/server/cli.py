@@ -17,7 +17,7 @@ ORCHESTRATORS = {
 
 # Define the function that runs the orchestrator.
 def run():
-    parser = utils.init_parser(ORCHESTRATORS)
+    parser = utils.init_parsers(ORCHESTRATORS)
     args = parser.parse_args()
     orchestrator_cls = ORCHESTRATORS[args.orchestrator]
     orchestrator = orchestrator_cls.create_from_args(args)

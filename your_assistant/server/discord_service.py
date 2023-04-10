@@ -31,7 +31,7 @@ class DiscordBot(commands.Bot):
         # Init the orchestrator.
         self.logger = Logger("DiscordBot")
         self.activity = discord.Activity(
-            type=discord.ActivityType.listening, name="/bard or /chat"
+            type=discord.ActivityType.listening, name="/bard or /chat or /claude"
         )
         self.orchestrators = {}
 
@@ -43,7 +43,7 @@ class DiscordBot(commands.Bot):
         orchestrator_name: str,
         orchestrator_type: Type,
     ) -> Orchestrator:
-        parser = utils.init_parser(ORCHESTRATORS)
+        parser = utils.init_parser(orchestrator_name, orchestrator_type)
         args_to_pass = [orchestrator_name, "--use-memory"]
         args = parser.parse_args(args_to_pass)
         return orchestrator_type(args=args)
@@ -119,7 +119,8 @@ async def speak_to_bot(
             f"Received message from {user} in channel [{channel}]: {args.prompt}"
         )
 
-        response = orchestrator.process(args=args)
+        # response = orchestrator.process(args=args)
+        response = "aaa"
         user_mention = interaction.user.mention
         response = f"{user_mention} {response}"
         bot.logger.info(f"Sending response: {response}")

@@ -159,10 +159,11 @@ def xml_to_markdown(xml_string: str) -> str:
     return "".join(markdown_text).strip()
 
 
-def init_parser(orchestrator_mapping: Dict[str, Type[Any]]) -> argparse.ArgumentParser:
+def init_parsers(orchestrator_mapping: Dict[str, Type[Any]]) -> argparse.ArgumentParser:
     """Define the function that initialize the argument parser that has the param of the prompt.
 
     Args:
+        orchestrator_name (str): The name of the orchestrator.
         orchestrator_mapping (Dict[str, Orchestrator]): The mapping between the string to the type.
 
     Returns:
@@ -185,6 +186,27 @@ def init_parser(orchestrator_mapping: Dict[str, Type[Any]]) -> argparse.Argument
         subparser = subparsers.add_parser(name)
         orchestrator.add_arguments_to_parser(subparser)
 
+    return parser
+
+
+def init_parser(
+    orchestrator_name: str, orchestrator_type: Type[Any]
+) -> argparse.ArgumentParser:
+    """Define the function that initialize the argument parser that has the param of the prompt.
+
+    Args:
+        orchestrator_name (str): The name of the orchestrator.
+        orchestrator_mapping (Dict[str, Orchestrator]): The mapping between the string to the type.
+
+    Returns:
+        argparse.ArgumentParser: The constructed argument parser.
+    """
+    parser = argparse.ArgumentParser(description="Orchestrator")
+    subparsers = parser.add_subparsers(
+        help="orchestrator", dest="orchestrator", required=True
+    )
+    subparser = subparsers.add_parser(orchestrator_name)
+    orchestrator_type.add_arguments_to_parser(subparser)
     return parser
 
 

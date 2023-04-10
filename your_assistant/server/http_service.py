@@ -45,7 +45,7 @@ def _copy_args(source_args: argparse.Namespace, dest_args: argparse.Namespace):
 
 
 def _init_orchestrator(orchestrator_name: str, orchestrator_type: Type) -> Orchestrator:
-    parser = utils.init_parser(ORCHESTRATORS)
+    parser = utils.init_parser(orchestrator_name, orchestrator_type)
     args_to_pass = [orchestrator_name, "--use-memory"]
     args = parser.parse_args(args_to_pass)
     return orchestrator_type(args=args)
