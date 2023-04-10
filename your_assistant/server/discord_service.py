@@ -2,23 +2,13 @@
 """Create the discord service.
 """
 import os
-from typing import Type
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-import your_assistant.core.utils as utils
 from your_assistant.core.orchestrator import *
 from your_assistant.core.utils import Logger, load_env
-
-ORCHESTRATORS = {
-    "ChatGPT": ChatGPTOrchestrator,
-    "Claude": AnthropicOrchestrator,
-    "RevChatGPT": RevChatGPTOrchestrator,
-    "RevBard": RevBardOrchestrator,
-    "QA": QAOrchestrator,
-}
 
 
 class DiscordBot(commands.Bot):
@@ -31,22 +21,11 @@ class DiscordBot(commands.Bot):
         # Init the orchestrator.
         self.logger = Logger("DiscordBot")
         self.activity = discord.Activity(
-            type=discord.ActivityType.listening, name="/bard or /chat or /claude"
+            type=discord.ActivityType.listening, name="/bard or /chat"
         )
-        self.orchestrators = {}
-
-        for name, orchestrator_type in ORCHESTRATORS.items():
-            self.orchestrators[name] = self._init_orchestrator(name, orchestrator_type)
-
-    def _init_orchestrator(
-        self,
-        orchestrator_name: str,
-        orchestrator_type: Type,
-    ) -> Orchestrator:
-        parser = utils.init_parser(orchestrator_name, orchestrator_type)
-        args_to_pass = [orchestrator_name, "--use-memory"]
-        args = parser.parse_args(args_to_pass)
-        return orchestrator_type(args=args)
+        self.chat_orchestrator = RevChatGPTOrchestrator(verbose=True)
+        self.bard_orchestrator = RevBardOrchestrator(verbose=True)
+        self.qa_orchestrator = QAOrchestrator(verbose=True)
 
     async def on_ready(self):
         """When the bot is ready."""
@@ -68,8 +47,7 @@ async def chat(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the ChatGPT bot."""
     args = argparse.Namespace()
     args.prompt = prompt
-    args.use_memory = False
-    await speak_to_bot(interaction, args, bot.orchestrators["ChatGPT"])
+    await speak_to_bot(interaction, args, bot.chat_orchestrator)
 
 
 @bot.tree.command(name="bard")
@@ -78,8 +56,7 @@ async def bard(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the Bard bot."""
     args = argparse.Namespace()
     args.prompt = prompt
-    args.use_memory = True
-    await speak_to_bot(interaction, args, bot.orchestrators["RevBard"])
+    await speak_to_bot(interaction, args, bot.bard_orchestrator)
 
 
 @bot.tree.command(name="qa")
@@ -88,18 +65,7 @@ async def qa(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the QA bot."""
     args = argparse.Namespace()
     args.prompt = prompt
-    args.use_memory = True
-    await speak_to_bot(interaction, args, bot.orchestrators["QA"])
-
-
-@bot.tree.command(name="claude")
-@app_commands.describe(prompt="prompt")
-async def claude(interaction: discord.Interaction, prompt: str) -> None:
-    """Speak to the Claude bot."""
-    args = argparse.Namespace()
-    args.prompt = prompt
-    args.use_memory = True
-    await speak_to_bot(interaction, args, bot.orchestrators["Claude"])
+    await speak_to_bot(interaction, args, bot.qa_orchestrator)
 
 
 async def speak_to_bot(
@@ -119,11 +85,9 @@ async def speak_to_bot(
             f"Received message from {user} in channel [{channel}]: {args.prompt}"
         )
 
-        # response = orchestrator.process(args=args)
-        response = "aaa"
+        response = orchestrator.process(args=args)
         user_mention = interaction.user.mention
         response = f"{user_mention} {response}"
-        bot.logger.info(f"Sending response: {response}")
         await interaction.followup.send(response)
     except Exception as e:
         error_message = f"Failed to send message: {e}"
