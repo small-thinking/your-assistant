@@ -109,7 +109,7 @@ def after_request_callback(response):
         dict(request.args),
         response.get_data(),
     )
-    response.headers["X-Execution-Time"] = str(time_in_ms)
+    response.headers["X-Execution-Time-Ms"] = str(time_in_ms)
     return response
 
 
