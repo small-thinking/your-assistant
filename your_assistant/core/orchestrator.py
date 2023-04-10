@@ -166,12 +166,13 @@ class ChatGPTOrchestrator(LLMOrchestrator):
         if not self.llm:
             raise ValueError("The llm must be initialized.")
         messsage = [HumanMessage(content=args.prompt)]
-        response = self.llm(messsage)
+        response = self.llm(messsage)  # type: ignore
         if self.verbose:
             self.logger.info(f"Response: {response}\n")
-        if not response.content.startswith("AI:"):
-            return response.content
-        return response.content[3:]
+        content = str(response.content)  # type: ignore
+        if not content.startswith("AI:"):
+            return content
+        return content[3:]
 
 
 class AnthropicOrchestrator(LLMOrchestrator):
