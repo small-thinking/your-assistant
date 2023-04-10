@@ -11,7 +11,7 @@ from langchain.llms.base import LLM
 from langchain.memory import ConversationSummaryBufferMemory
 
 from your_assistant.core.indexer import KnowledgeIndexer
-from your_assistant.core.llm import ChatGPT, RevBard, RevChatGPT
+from your_assistant.core.llm import RevBard, RevChatGPT
 from your_assistant.core.responder import DocumentQA
 from your_assistant.core.utils import Logger, load_env
 
@@ -125,7 +125,6 @@ class ChatGPTOrchestrator(LLMOrchestrator):
         self.model = args.model
         self.temperature = args.temperature
         self.max_tokens = args.max_token
-        # self.llm = ChatGPT()
         self.llm = OpenAIChat(
             model_name=self.model,
             temperature=self.temperature,
@@ -322,7 +321,10 @@ class QAOrchestrator(Orchestrator):
 
     def _init_llm(self, args: argparse.Namespace) -> None:
         if args.llm_type == "ChatGPT":
-            self.llm = ChatGPT()
+            self.llm = OpenAIChat(
+                temperature=0.1,
+                max_tokens=args.max_tokens_size,
+            )
 
     @classmethod
     def _add_arguments_to_parser(cls, parser: argparse.ArgumentParser) -> None:
