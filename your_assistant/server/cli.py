@@ -7,6 +7,7 @@ from your_assistant.core.orchestrator import *
 
 ORCHESTRATORS = {
     "ChatGPT": ChatGPTOrchestrator,
+    "Claude": AnthropicOrchestrator,
     "RevChatGPT": RevChatGPTOrchestrator,
     "RevBard": RevBardOrchestrator,
     "QA": QAOrchestrator,
@@ -28,6 +29,7 @@ def run():
         print(response)
     elif args.orchestrator in [
         "ChatGPT",
+        "Claude",
         "RevChatGPT",
         "RevBard",
         "QA",

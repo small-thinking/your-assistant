@@ -137,6 +137,27 @@ files = [
 ]
 
 [[package]]
+name = "anthropic"
+version = "0.2.6"
+description = "Library for accessing the anthropic API"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "anthropic-0.2.6-py3-none-any.whl", hash = "sha256:bf4b69a9d25d573162accbe8aa9e022331c67a82519250ac30573ad506a1f663"},
+    {file = "anthropic-0.2.6.tar.gz", hash = "sha256:253dca8484bca13eab08afa6b1e1d3f3451d6b65cc2be31c5cd4dac1a49a03f7"},
+]
+
+[package.dependencies]
+aiohttp = "*"
+httpx = "*"
+requests = "*"
+tokenizers = "*"
+
+[package.extras]
+dev = ["black (>=22.3.0)", "pytest"]
+
+[[package]]
 name = "antlr4-python3-runtime"
 version = "4.9.3"
 description = "ANTLR 4.9.3 runtime for Python 3.7"
@@ -4968,4 +4989,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "d39007efd3615e7ef2a424f997cbb44de20067aba456f60f61e18be6c3ce9aea"
+content-hash = "a59f1989d603090618a27e81b34e79e028c02e7b83836ad4c240f67ec634a65f"
