@@ -161,7 +161,6 @@ class ChatGPTOrchestrator(LLMOrchestrator):
         """
         if len(args.prompt) == 0:
             return ""
-        args.use_memory = False
         if not self.llm:
             raise ValueError("The llm must be initialized.")
         messsage = [HumanMessage(content=args.prompt)]
