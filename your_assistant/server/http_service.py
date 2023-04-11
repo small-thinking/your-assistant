@@ -5,9 +5,10 @@ import time
 from argparse import Namespace
 
 import openai
+import torch
 from flask import Flask
 from flask import g as app_ctx
-from flask import request
+from flask import request, send_file
 from flask_cors import CORS, cross_origin
 
 import your_assistant.core.utils as utils
@@ -19,7 +20,6 @@ cors = CORS(app)
 
 chatgpt_orchestrator = None
 rev_bard_orchestrator = None
-
 
 ORCHESTRATORS = {
     "ChatGPT": ChatGPTOrchestrator,
@@ -102,12 +102,11 @@ def after_request_callback(response):
     time_in_ms = int(total_time * 1000)
     # Log the time taken for the endpoint
     app.logger.debug(
-        "%s ms %s %s %s %s",
+        "%s ms %s %s %s",
         time_in_ms,
         request.method,
         request.path,
         dict(request.args),
-        response.get_data(),
     )
     response.headers["X-Execution-Time"] = str(time_in_ms)
     return response
@@ -166,6 +165,43 @@ def handle_audio_transcribe_request():
 
         audio_file.close()
         return {"transcript": transcript}
+
+
+@app.route("/api/v1/audio/text-to-speech", methods=["POST"])
+def handle_text_to_speech():
+    if request.method == "POST":
+        model = request.json["model"]
+        if model == "Silero":
+            # TODO(fuj): 4 seems to be the optimal # for M1 and server cpu
+            num_threads = (
+                request.json["num_threads"] if "num_threads" in request.json else 4
+            )
+            # TODO(fuj): GPU doesn't seem to help? Dig more into this later.
+            device = torch.device("cpu")
+            torch.set_num_threads(num_threads)
+            local_file = "model.pt"
+
+            if not os.path.isfile(local_file):
+                torch.hub.download_url_to_file(
+                    "https://models.silero.ai/models/tts/en/v3_en.pt", local_file
+                )
+
+            model = torch.package.PackageImporter(local_file).load_pickle(
+                "tts_models", "model"
+            )
+            model.to(device)
+
+            text = request.json["body"]
+            sample_rate = (
+                request.json["sample_rate"] if "sample_rate" in request.json else 48000
+            )
+            speaker = request.json["voice_id"] if "voice_id" in request.json else "en_0"
+
+            audio_paths = model.save_wav(
+                text=text, speaker=speaker, sample_rate=sample_rate
+            )
+
+            return send_file("test.wav", as_attachment=True)
 
 
 @app.route("/api/v1/qa", methods=["POST"])
