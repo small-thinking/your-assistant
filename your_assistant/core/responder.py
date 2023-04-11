@@ -7,6 +7,7 @@ from typing import Any, Dict, List
 
 from colorama import Fore
 from langchain import PromptTemplate
+from langchain.chat_models import ChatOpenAI
 from langchain.docstore.document import Document
 from langchain.embeddings import FakeEmbeddings, OpenAIEmbeddings
 from langchain.memory import ConversationSummaryBufferMemory
@@ -23,7 +24,7 @@ class DocumentQA:
     def __init__(
         self,
         db_name: str = "faiss.db",
-        llm_type: str = "RevChatGPT",
+        llm_type: str = "ChatGPT",
         use_memory: bool = True,
         memory_token_size: int = 300,
         test_mode: bool = False,
@@ -35,7 +36,12 @@ class DocumentQA:
         self.llm: Any = None
         # Init the LLM.
         if llm_type == "ChatGPT":
-            self.llm = llm_lib.ChatGPT()
+            self.llm = ChatOpenAI(  # type: ignore
+                model_kwargs={
+                    "temperature": 0.1,
+                    "max_tokens": max_token_size,
+                }
+            )
         elif llm_type == "RevBard":
             self.llm = llm_lib.RevBard()
         else:

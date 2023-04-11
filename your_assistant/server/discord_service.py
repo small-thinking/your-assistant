@@ -1,14 +1,26 @@
 # type: ignore
 """Create the discord service.
 """
+import argparse
 import os
+import traceback
+from typing import Type
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from your_assistant.core.orchestrator import *
-from your_assistant.core.utils import Logger, load_env
+from your_assistant.core.utils import Logger, init_parser, load_env
+
+AVAILABLE_ORCHESTRATORS = {
+    "ChatGPT": ChatGPTOrchestrator,
+    "Claude": AnthropicOrchestrator,
+    "RevBard": RevBardOrchestrator,
+    "QA": QAOrchestrator,
+}
+
+orchestrators = {}
 
 
 class DiscordBot(commands.Bot):
@@ -23,9 +35,20 @@ class DiscordBot(commands.Bot):
         self.activity = discord.Activity(
             type=discord.ActivityType.listening, name="/bard or /chat"
         )
-        self.chat_orchestrator = RevChatGPTOrchestrator(verbose=True)
-        self.bard_orchestrator = RevBardOrchestrator(verbose=True)
-        self.qa_orchestrator = QAOrchestrator(verbose=True)
+
+        for name, orchestrator_type in AVAILABLE_ORCHESTRATORS.items():
+            self.logger.info(f"Initializing {name}...")
+            orchestrators[name] = self._init_orchestrator(name, orchestrator_type)
+
+    def _init_orchestrator(
+        self,
+        orchestrator_name: str,
+        orchestrator_type: Type,
+    ) -> Orchestrator:
+        parser = init_parser(orchestrator_name, orchestrator_type)
+        args_to_pass = [orchestrator_name, "--use-memory"]
+        args = parser.parse_args(args_to_pass)
+        return orchestrator_type(args=args)
 
     async def on_ready(self):
         """When the bot is ready."""
@@ -47,7 +70,18 @@ async def chat(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the ChatGPT bot."""
     args = argparse.Namespace()
     args.prompt = prompt
-    await speak_to_bot(interaction, args, bot.chat_orchestrator)
+    args.use_memory = True
+    await speak_to_bot(interaction, args, "ChatGPT", orchestrators["ChatGPT"])
+
+
+@bot.tree.command(name="claude")
+@app_commands.describe(prompt="prompt")
+async def claude(interaction: discord.Interaction, prompt: str) -> None:
+    """Speak to the Claude bot."""
+    args = argparse.Namespace()
+    args.prompt = prompt
+    args.use_memory = True
+    await speak_to_bot(interaction, args, "Claude", orchestrators["Claude"])
 
 
 @bot.tree.command(name="bard")
@@ -56,7 +90,8 @@ async def bard(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the Bard bot."""
     args = argparse.Namespace()
     args.prompt = prompt
-    await speak_to_bot(interaction, args, bot.bard_orchestrator)
+    args.use_memory = True
+    await speak_to_bot(interaction, args, "Bard", orchestrators["RevBard"])
 
 
 @bot.tree.command(name="qa")
@@ -65,12 +100,14 @@ async def qa(interaction: discord.Interaction, prompt: str) -> None:
     """Speak to the QA bot."""
     args = argparse.Namespace()
     args.prompt = prompt
-    await speak_to_bot(interaction, args, bot.qa_orchestrator)
+    args.use_memory = True
+    await speak_to_bot(interaction, args, "QA", orchestrators["QA"])
 
 
 async def speak_to_bot(
     interaction: discord.Interaction,
     args: argparse.Namespace,
+    orchestrator_name: str,
     orchestrator: Orchestrator,
 ) -> None:
     """Speak to the bot."""
@@ -84,13 +121,14 @@ async def speak_to_bot(
         bot.logger.info(
             f"Received message from {user} in channel [{channel}]: {args.prompt}"
         )
-
+        await interaction.followup.send(f"To {orchestrator_name}: {args.prompt}...")
         response = orchestrator.process(args=args)
         user_mention = interaction.user.mention
         response = f"{user_mention} {response}"
+        bot.logger.info(f"Sending response: {response}")
         await interaction.followup.send(response)
     except Exception as e:
-        error_message = f"Failed to send message: {e}"
+        error_message = f"Failed to send message: {e}.\n{traceback.format_exc()}"
         bot.logger.error(error_message)
         await interaction.followup.send(error_message)
 

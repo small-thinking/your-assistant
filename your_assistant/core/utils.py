@@ -13,7 +13,8 @@ from urllib.request import Request, urlopen
 
 from colorama import Fore
 from dotenv import load_dotenv
-from transformers import GPT2Tokenizer
+
+# from transformers import GPT2Tokenizer
 
 
 def load_env(env_file_path: str = "") -> None:
@@ -159,10 +160,11 @@ def xml_to_markdown(xml_string: str) -> str:
     return "".join(markdown_text).strip()
 
 
-def init_parser(orchestrator_mapping: Dict[str, Type[Any]]) -> argparse.ArgumentParser:
+def init_parsers(orchestrator_mapping: Dict[str, Type[Any]]) -> argparse.ArgumentParser:
     """Define the function that initialize the argument parser that has the param of the prompt.
 
     Args:
+        orchestrator_name (str): The name of the orchestrator.
         orchestrator_mapping (Dict[str, Orchestrator]): The mapping between the string to the type.
 
     Returns:
@@ -188,15 +190,37 @@ def init_parser(orchestrator_mapping: Dict[str, Type[Any]]) -> argparse.Argument
     return parser
 
 
+def init_parser(
+    orchestrator_name: str, orchestrator_type: Type[Any]
+) -> argparse.ArgumentParser:
+    """Define the function that initialize the argument parser that has the param of the prompt.
+
+    Args:
+        orchestrator_name (str): The name of the orchestrator.
+        orchestrator_mapping (Dict[str, Orchestrator]): The mapping between the string to the type.
+
+    Returns:
+        argparse.ArgumentParser: The constructed argument parser.
+    """
+    parser = argparse.ArgumentParser(description="Orchestrator")
+    subparsers = parser.add_subparsers(
+        help="orchestrator", dest="orchestrator", required=True
+    )
+    subparser = subparsers.add_parser(orchestrator_name)
+    orchestrator_type.add_arguments_to_parser(subparser)
+    return parser
+
+
 def truncate_text_by_tokens(text: str, max_token_size: int) -> str:
     """Truncate text to a maximum number of tokens."""
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    tokens = tokenizer.encode(text)
+    return text
+    # tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    # tokens = tokenizer.encode(text)
 
-    # Truncate tokens if necessary
-    if len(tokens) > max_token_size:
-        tokens = tokens[:max_token_size]
+    # # Truncate tokens if necessary
+    # if len(tokens) > max_token_size:
+    #     tokens = tokens[:max_token_size]
 
-    # Convert tokens back to text
-    truncated_text = tokenizer.decode(tokens)
-    return str(truncated_text)
+    # # Convert tokens back to text
+    # truncated_text = tokenizer.decode(tokens)
+    # return str(truncated_text)

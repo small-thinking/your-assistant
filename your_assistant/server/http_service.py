@@ -3,6 +3,7 @@
 import os
 import time
 from argparse import Namespace
+from typing import Type
 
 import openai
 from flask import Flask
@@ -17,31 +18,23 @@ from your_assistant.core.utils import load_env
 app = Flask("Your Assistant")
 cors = CORS(app)
 
-chatgpt_orchestrator = None
-rev_bard_orchestrator = None
+orchestrators = {}
 
 
 ORCHESTRATORS = {
     "ChatGPT": ChatGPTOrchestrator,
+    "Claude": AnthropicOrchestrator,
     "RevChatGPT": RevChatGPTOrchestrator,
     "RevBard": RevBardOrchestrator,
     "QA": QAOrchestrator,
-    "KnowledgeIndex": KnowledgeIndexOrchestrator,
 }
 
 
 def init_service():
-    global chatgpt_orchestrator
-    global rev_chatgpt_orchestrator
-    global rev_bard_orchestrator
-    global qa_orchestrator
-
+    global orchestrators
     load_env()
-
-    chatgpt_orchestrator = _init_chatgpt_orchestrator()
-    rev_chatgpt_orchestrator = _init_rev_chat_gpt_orchestrator()
-    rev_bard_orchestrator = _init_rev_bard_orchestrator()
-    qa_orchestrator = _init_qa_orchestrator()
+    for name, orchestrator_type in ORCHESTRATORS.items():
+        orchestrators[name] = _init_orchestrator(name, orchestrator_type)
 
 
 def _copy_args(source_args: argparse.Namespace, dest_args: argparse.Namespace):
@@ -51,39 +44,11 @@ def _copy_args(source_args: argparse.Namespace, dest_args: argparse.Namespace):
         setattr(dest_args, key, value)
 
 
-def _init_chatgpt_orchestrator() -> ChatGPTOrchestrator:
-    parser = utils.init_parser(ORCHESTRATORS)
-    args_to_pass = ["ChatGPT", "--use-memory"]
+def _init_orchestrator(orchestrator_name: str, orchestrator_type: Type) -> Orchestrator:
+    parser = utils.init_parser(orchestrator_name, orchestrator_type)
+    args_to_pass = [orchestrator_name, "--use-memory"]
     args = parser.parse_args(args_to_pass)
-    return ChatGPTOrchestrator(args)
-
-
-def _init_rev_chat_gpt_orchestrator() -> RevChatGPTOrchestrator:
-    parser = utils.init_parser(ORCHESTRATORS)
-    args_to_pass = ["RevChatGPT", "--use-memory"]
-    args = parser.parse_args(args_to_pass)
-    return RevChatGPTOrchestrator(args)
-
-
-def _init_rev_bard_orchestrator() -> RevBardOrchestrator:
-    parser = utils.init_parser(ORCHESTRATORS)
-    args_to_pass = ["RevBard", "--use-memory"]
-    args = parser.parse_args(args_to_pass)
-    return RevBardOrchestrator(args)
-
-
-def _init_qa_orchestrator() -> QAOrchestrator:
-    parser = utils.init_parser(ORCHESTRATORS)
-    args_to_pass = [
-        "QA",
-        "--use-memory",
-        "--max-token-size",
-        "800",
-        "--memory-token-size",
-        "300",
-    ]
-    args = parser.parse_args(args_to_pass)
-    return QAOrchestrator(args)
+    return orchestrator_type(args=args)
 
 
 @app.before_request
@@ -119,8 +84,19 @@ def handle_chatgpt_request():
         prompt = request.json["prompt"]
         runtime_args = Namespace()
         runtime_args.prompt = prompt
-        _copy_args(chatgpt_orchestrator.args, runtime_args)
-        response = chatgpt_orchestrator.process(args=runtime_args)
+        _copy_args(orchestrators["ChatGPT"].args, runtime_args)
+        response = orchestrators["ChatGPT"].process(args=runtime_args)
+        return {"response": response}
+
+
+@app.route("/api/v1/claude", methods=["POST"])
+def handle_claude_request():
+    if request.method == "POST":
+        prompt = request.json["prompt"]
+        runtime_args = Namespace()
+        runtime_args.prompt = prompt
+        _copy_args(orchestrators["Claude"].args, runtime_args)
+        response = orchestrators["Claude"].process(args=runtime_args)
         return {"response": response}
 
 
@@ -130,8 +106,8 @@ def handle_rev_chatgpt_request():
         prompt = request.json["prompt"]
         runtime_args = Namespace()
         runtime_args.prompt = prompt
-        _copy_args(rev_chatgpt_orchestrator.args, runtime_args)
-        response = rev_chatgpt_orchestrator.process(args=runtime_args)
+        _copy_args(orchestrators["RevChatGPT"].args, runtime_args)
+        response = orchestrators["RevChatGPT"].process(args=runtime_args)
         return {"response": response}
 
 
@@ -142,8 +118,8 @@ def handle_bard_request():
         prompt = request.json["prompt"]
         runtime_args = Namespace()
         runtime_args.prompt = prompt
-        _copy_args(rev_bard_orchestrator.args, runtime_args)
-        response = rev_bard_orchestrator.process(args=runtime_args)
+        _copy_args(orchestrators["RevBard"].args, runtime_args)
+        response = orchestrators["RevBard"].process(args=runtime_args)
         return {"response": response}
 
 
@@ -174,8 +150,8 @@ def handle_qa_request():
         prompt = request.json["prompt"]
         runtime_args = Namespace()
         runtime_args.prompt = prompt
-        _copy_args(qa_orchestrator.args, runtime_args)
-        response = qa_orchestrator.process(args=runtime_args)
+        _copy_args(orchestrators["QA"].args, runtime_args)
+        response = orchestrators["QA"].process(args=runtime_args)
         return {"response": response}
 
 

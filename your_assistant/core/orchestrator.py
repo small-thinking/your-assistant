@@ -6,11 +6,14 @@ import textwrap
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
+from langchain.chat_models import ChatOpenAI
+from langchain.llms import Anthropic
 from langchain.llms.base import LLM
 from langchain.memory import ConversationSummaryBufferMemory
+from langchain.schema import HumanMessage
 
 from your_assistant.core.indexer import KnowledgeIndexer
-from your_assistant.core.llm import ChatGPT, RevBard, RevChatGPT
+from your_assistant.core.llm import RevBard, RevChatGPT
 from your_assistant.core.responder import DocumentQA
 from your_assistant.core.utils import Logger, load_env
 
@@ -87,7 +90,7 @@ class LLMOrchestrator(Orchestrator):
     def process(self, args: argparse.Namespace) -> str:
         # Set memory.
         original_prompt = args.prompt
-        if args.use_memory:
+        if args.use_memory and hasattr(self, "memory"):
             history: Dict[str, Any] = self.memory.load_memory_variables({})
             if self.verbose:
                 self.logger.info(f"History: {history}\n\n")
@@ -101,7 +104,7 @@ class LLMOrchestrator(Orchestrator):
         if self.verbose:
             self.logger.info(f"Prompt: {args.prompt}\n\n")
         response = self._process(args=args)
-        if args.use_memory:
+        if args.use_memory and hasattr(self, "memory"):
             # Only save the user original prompt without history augmentation.
             self.memory.save_context(
                 inputs={"user": original_prompt}, outputs={"AI": response}
@@ -123,13 +126,75 @@ class ChatGPTOrchestrator(LLMOrchestrator):
     def _init_llm(self, args: argparse.Namespace) -> None:
         self.model = args.model
         self.temperature = args.temperature
-        self.max_token = args.max_token
-        self.llm = ChatGPT()
+        self.max_tokens = args.max_token
+        self.llm = ChatOpenAI(  # type: ignore
+            model_name=self.model,
+            model_kwargs={
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens,
+            },
+        )
 
     @classmethod
     def _add_arguments_to_parser(cls, parser: argparse.ArgumentParser) -> None:
         super()._add_arguments_to_parser(parser=parser)
         parser.add_argument("-m", "--model", default="gpt-3.5-turbo", type=str)
+        parser.add_argument(
+            "--temperature",
+            default=0.1,
+            type=float,
+            help="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output"
+            " more random, while lower values like 0.2 will make it more focused and deterministic.",
+        )
+        parser.add_argument(
+            "--max-token",
+            default=500,
+            type=int,
+            help="The total length of input tokens and generated tokens is limited by the model's context length.",
+        )
+
+    def _process(self, args: argparse.Namespace) -> str:
+        """Process the prompt.
+
+        Args:
+            prompt (str): The prompt to the agent.
+        """
+        if len(args.prompt) == 0:
+            return ""
+        args.use_memory = False
+        if not self.llm:
+            raise ValueError("The llm must be initialized.")
+        messsage = [HumanMessage(content=args.prompt)]
+        response = self.llm(messsage)  # type: ignore
+        if self.verbose:
+            self.logger.info(f"Response: {response}\n")
+        content = str(response.content)  # type: ignore
+        if not content.startswith("AI:"):
+            return content
+        return content[3:]
+
+
+class AnthropicOrchestrator(LLMOrchestrator):
+    """The orchestrator that uses the Anthropic Claude."""
+
+    def __init__(self, args: argparse.Namespace):
+        """Initialize the orchestrator."""
+        super().__init__(args=args)
+
+    def _init_llm(self, args: argparse.Namespace) -> None:
+        self.model = args.model
+        self.temperature = args.temperature
+        self.max_tokens = args.max_token
+        self.llm = Anthropic(  # type: ignore
+            model=self.model,
+            max_tokens_to_sample=self.max_tokens,
+            temperature=self.temperature,
+        )
+
+    @classmethod
+    def _add_arguments_to_parser(cls, parser: argparse.ArgumentParser) -> None:
+        super()._add_arguments_to_parser(parser=parser)
+        parser.add_argument("-m", "--model", default="claude-v1", type=str)
         parser.add_argument(
             "--temperature",
             default=0.1,
@@ -192,9 +257,6 @@ class RevBardOrchestrator(LLMOrchestrator):
     def __init__(self, args: argparse.Namespace):
         """Initialize the orchestrator."""
         super().__init__(args=args)
-        args_dict = vars(args)
-        for key, value in args_dict.items():
-            print(f"{key}: {value}")
 
     def _init_llm(self, args: argparse.Namespace) -> None:
         self.llm = RevBard()
@@ -316,7 +378,12 @@ class QAOrchestrator(Orchestrator):
 
     def _init_llm(self, args: argparse.Namespace) -> None:
         if args.llm_type == "ChatGPT":
-            self.llm = ChatGPT()
+            self.llm = ChatOpenAI(  # type: ignore
+                model_kwargs={
+                    "temperature": 0.1,
+                    "max_tokens": args.max_token_size,
+                }
+            )
 
     @classmethod
     def _add_arguments_to_parser(cls, parser: argparse.ArgumentParser) -> None:
