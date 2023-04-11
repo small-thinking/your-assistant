@@ -90,7 +90,7 @@ class LLMOrchestrator(Orchestrator):
     def process(self, args: argparse.Namespace) -> str:
         # Set memory.
         original_prompt = args.prompt
-        if args.use_memory:
+        if args.use_memory and hasattr(self, "memory"):
             history: Dict[str, Any] = self.memory.load_memory_variables({})
             if self.verbose:
                 self.logger.info(f"History: {history}\n\n")
@@ -104,7 +104,7 @@ class LLMOrchestrator(Orchestrator):
         if self.verbose:
             self.logger.info(f"Prompt: {args.prompt}\n\n")
         response = self._process(args=args)
-        if args.use_memory:
+        if args.use_memory and hasattr(self, "memory"):
             # Only save the user original prompt without history augmentation.
             self.memory.save_context(
                 inputs={"user": original_prompt}, outputs={"AI": response}
@@ -121,7 +121,6 @@ class ChatGPTOrchestrator(LLMOrchestrator):
 
     def __init__(self, args: argparse.Namespace):
         """Initialize the orchestrator."""
-        args.use_memory = False
         super().__init__(args=args)
 
     def _init_llm(self, args: argparse.Namespace) -> None:
@@ -258,9 +257,6 @@ class RevBardOrchestrator(LLMOrchestrator):
     def __init__(self, args: argparse.Namespace):
         """Initialize the orchestrator."""
         super().__init__(args=args)
-        args_dict = vars(args)
-        for key, value in args_dict.items():
-            print(f"{key}: {value}")
 
     def _init_llm(self, args: argparse.Namespace) -> None:
         self.llm = RevBard()

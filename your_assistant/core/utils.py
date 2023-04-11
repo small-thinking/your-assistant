@@ -13,7 +13,8 @@ from urllib.request import Request, urlopen
 
 from colorama import Fore
 from dotenv import load_dotenv
-from transformers import GPT2Tokenizer
+
+# from transformers import GPT2Tokenizer
 
 
 def load_env(env_file_path: str = "") -> None:
@@ -212,13 +213,14 @@ def init_parser(
 
 def truncate_text_by_tokens(text: str, max_token_size: int) -> str:
     """Truncate text to a maximum number of tokens."""
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    tokens = tokenizer.encode(text)
+    return text
+    # tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    # tokens = tokenizer.encode(text)
 
-    # Truncate tokens if necessary
-    if len(tokens) > max_token_size:
-        tokens = tokens[:max_token_size]
+    # # Truncate tokens if necessary
+    # if len(tokens) > max_token_size:
+    #     tokens = tokens[:max_token_size]
 
-    # Convert tokens back to text
-    truncated_text = tokenizer.decode(tokens)
-    return str(truncated_text)
+    # # Convert tokens back to text
+    # truncated_text = tokenizer.decode(tokens)
+    # return str(truncated_text)
