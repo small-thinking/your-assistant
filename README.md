@@ -19,7 +19,7 @@ We use the following tools to ease the project development:
 Please run `dev-setup.sh` to setup the environment.
 
 When you need to add new package, please use `poetry add <package>` to add dependencies, or use `poetry add --group dev <package>` to add development dependencies, e.g. pytest, flake8, etc.
-Note: make sure your `poetry` version is at `1.4.x` or higher, some OS may install `1.1.x` by default, which is incompatible with the `pyproject.toml` we have and will run into issues.
+> Note: make sure your `poetry` version is at `1.4.x` or higher, some OS may install `1.1.x` by default, which is incompatible with the `pyproject.toml` we have and will run into issues.
 
 For auto-formatting, please use black in your IDE to format your code. If you use VSCode, you can create a folder `.vscode` and create a file `settings.json`. In the file, set "format at save".
 ```
