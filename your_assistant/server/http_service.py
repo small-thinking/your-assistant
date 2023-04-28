@@ -7,7 +7,7 @@ from typing import Type
 
 import openai
 import torch
-from flask import Flask
+from flask import Flask, Response
 from flask import g as app_ctx
 from flask import request, send_file
 from flask_cors import CORS, cross_origin
@@ -147,6 +147,7 @@ def handle_audio_transcribe_request():
 def handle_text_to_speech():
     if request.method == "POST":
         model = request.json["model"]
+        audio_filename = ""
         if model == "Silero":
             # TODO(fuj): 4 seems to be the optimal # for M1 and server cpu
             num_threads = (
@@ -176,8 +177,27 @@ def handle_text_to_speech():
             audio_paths = model.save_wav(
                 text=text, speaker=speaker, sample_rate=sample_rate
             )
+            audio_filename = "test.wav"
 
-            return send_file("test.wav", as_attachment=True)
+        # Decide if we should stream it or not. Default no
+        is_streaming = (
+            request.json["is_streaming"] if "is_streaming" in request.json else False
+        )
+        if not is_streaming:
+            return send_file(audio_filename, as_attachment=True)
+        else:
+            chunk_size = (
+                request.json["chunk_size"] if "chunk_size" in request.json else 64000
+            )
+
+            def generate():
+                with open(audio_filename, "rb") as fwav:
+                    data = fwav.read(chunk_size)
+                    while data:
+                        yield data
+                        data = fwav.read(chunk_size)
+
+            return Response(generate(), mimetype="audio/wav", direct_passthrough=True)
 
 
 @app.route("/api/v1/qa", methods=["POST"])
