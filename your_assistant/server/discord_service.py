@@ -17,6 +17,7 @@ AVAILABLE_ORCHESTRATORS = {
     "ChatGPT": ChatGPTOrchestrator,
     "Claude": AnthropicOrchestrator,
     "RevBard": RevBardOrchestrator,
+    "PaLM": PaLMOrchestrator,
     "QA": QAOrchestrator,
 }
 
@@ -92,6 +93,16 @@ async def bard(interaction: discord.Interaction, prompt: str) -> None:
     args.prompt = prompt
     args.use_memory = True
     await speak_to_bot(interaction, args, "Bard", orchestrators["RevBard"])
+
+
+@bot.tree.command(name="palm")
+@app_commands.describe(prompt="prompt")
+async def chat(interaction: discord.Interaction, prompt: str) -> None:
+    """Speak to the PaLM bot."""
+    args = argparse.Namespace()
+    args.prompt = prompt
+    args.use_memory = True
+    await speak_to_bot(interaction, args, "PaLM", orchestrators["PaLM"])
 
 
 @bot.tree.command(name="qa")

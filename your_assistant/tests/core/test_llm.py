@@ -77,3 +77,23 @@ class TestLLMs:
         load_env(env_file_path=os.path.join(root_path, config_file))
         llm = llm_lib.RevBard(test_mode=test_mode)
         assert llm("This is a test prompt.") == expected
+
+    @pytest.mark.parametrize(
+        "config_file, test_mode, expected",
+        [
+            (".env.template", True, "This is a test PaLM response."),
+            (
+                ".env.not-exist",
+                False,
+                "Please set PALM_API_KEY before chatting with PaLM.",
+            ),
+        ],
+    )
+    def test_palm(self, setup, config_file, test_mode, expected):
+        """Test the PaLM LLM."""
+        root_path = setup
+        for key in os.environ:
+            del os.environ[key]
+        load_env(env_file_path=os.path.join(root_path, config_file))
+        llm = llm_lib.PaLM(test_mode=test_mode)
+        assert llm("This is a test PaLM prompt.") == expected
